@@ -1,0 +1,10 @@
+PASS
+workbook=LYK_Jejuro_vehicle_dataset_2026-08-18.xlsx
+sheets=12
+formulas=11234
+current_vehicle_records=912
+historical_soft_deleted_vehicle_records=2526
+maintenance_events=15318
+vehicle_strong_join_reservations=80
+estimated_values=0
+pii_columns=0

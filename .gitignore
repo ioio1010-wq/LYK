@@ -1,0 +1,20 @@
+.DS_Store
+*.zip
+~$*
+.env
+*.pem
+
+# 대용량 데이터 (로컬에만 보관)
+Mixpanel/
+Mixpanel_partner/
+data/
+
+__pycache__/
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+*.log

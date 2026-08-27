@@ -1,0 +1,14 @@
+{
+  "raw_canonical_users": 68814,
+  "excluded_reservation_id_only_users": 1176,
+  "analysis_canonical_users": 67638,
+  "analysis_customer_id_users": 10023,
+  "analysis_anonymous_session_users": 57615,
+  "reservation_users": 9685,
+  "paid_users": 2963,
+  "reservation_user_rate": 0.1431887400573642,
+  "paid_user_rate": 0.04380673585854106,
+  "customer_reservations": 25745,
+  "customer_paid_reservations": 3379,
+  "customer_paid_reservation_rate": 0.13124878617207225
+}

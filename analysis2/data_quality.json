@@ -1,0 +1,63 @@
+{
+  "source_dir": "/Users/yangjiyun/Desktop/LYK/Mixpanel_partner",
+  "files": 7,
+  "raw_rows": 11726603,
+  "reservation_rows_before_cross_file_dedup": 15187,
+  "reservations": 15186,
+  "duplicate_reservations_removed": 1,
+  "mapped_model_rate": 1.0,
+  "car_ids": 137,
+  "car_models": 137,
+  "ambiguous_car_ids": 15,
+  "file_stats": [
+    {
+      "file": "mixpanel_jejuro_2026-01.filtered.parquet",
+      "month": "2026-01",
+      "raw_rows": 1791748,
+      "reservation_rows": 2483,
+      "reservation_revenue": 348357650.0
+    },
+    {
+      "file": "mixpanel_jejuro_2026-02.filtered.parquet",
+      "month": "2026-02",
+      "raw_rows": 1596623,
+      "reservation_rows": 2292,
+      "reservation_revenue": 337448460.0
+    },
+    {
+      "file": "mixpanel_jejuro_2026-03.filtered.parquet",
+      "month": "2026-03",
+      "raw_rows": 2027085,
+      "reservation_rows": 2997,
+      "reservation_revenue": 394594835.0
+    },
+    {
+      "file": "mixpanel_jejuro_2026-04.filtered.parquet",
+      "month": "2026-04",
+      "raw_rows": 1413055,
+      "reservation_rows": 1908,
+      "reservation_revenue": 331763035.0
+    },
+    {
+      "file": "mixpanel_jejuro_2026-05.filtered.parquet",
+      "month": "2026-05",
+      "raw_rows": 1457738,
+      "reservation_rows": 1931,
+      "reservation_revenue": 308512500.0
+    },
+    {
+      "file": "mixpanel_jejuro_2026-06.filtered.parquet",
+      "month": "2026-06",
+      "raw_rows": 1654777,
+      "reservation_rows": 1865,
+      "reservation_revenue": 311205165.0
+    },
+    {
+      "file": "mixpanel_jejuro_2026-07.filtered.parquet",
+      "month": "2026-07",
+      "raw_rows": 1785577,
+      "reservation_rows": 1711,
+      "reservation_revenue": 432218245.0
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+﻿utm_source,reservations,paid_reservations,revenue_base,avg_revenue_base,refunded,cancelled,paid_reservation_rate,refund_or_partial_rate,cancelled_rate
+(unknown),25678,3367,830428290,32340.068930602072,860,190,0.13112391930835735,0.033491704961445594,0.007399330165900771
+google,54,9,2839371,52580.944444444445,4,0,0.16666666666666666,0.07407407407407407,0.0
+{{site_source_name}},4,2,27839,6959.75,0,2,0.5,0.0,0.5
+app,8,1,214881,26860.125,0,0,0.125,0.0,0.0
+INFLUENCER,1,0,8049,8049.0,0,0,0.0,0.0,0.0

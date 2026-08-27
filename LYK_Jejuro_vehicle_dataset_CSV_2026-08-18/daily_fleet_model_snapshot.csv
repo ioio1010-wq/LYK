@@ -1,0 +1,142 @@
+﻿snapshot_date_utc,snapshot_at_utc,vehicle_model_id,model_name,vehicle_class,current_non_deleted_vehicle_count,usable_state_count,unusable_state_count,currently_assigned_vehicle_count_strong_join,current_assignment_share_proxy_formula,metric_classification,limitation
+2026-08-18,2026-08-18 06:17:45 UTC,1843,16/18년 올뉴카니발9인(경유),RV,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1846,18/19년 쏠라티(15인/경유),RV,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1847,18년 올뉴카니발리무진7인(경유),RV,7,7,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1854,19년 더뉴그랜드스타렉스12인(경유),RV,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1859,19년 더뉴카니발리무진7인(경유),RV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2225,19년 올뉴K3(휘),COMPACT,9,9,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1878,20/21년 BMW Z4 로드스터(휘),IMPORTED,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1873,20년 K5(LPG),MIDSIZE,8,8,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2021,20년 K5(LPG) 청주지점,MIDSIZE,5,3,2,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1869,20년 K5(휘),MIDSIZE,10,0,10,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1845,20년 SM6(휘),MIDSIZE,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1871,20년 더 뉴 그랜저(LPG),LUXURY,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1868,20년 더 뉴 그랜저(휘),LUXURY,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1872,20년 베리뉴티볼리(경유),SUV,4,2,2,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1875,20년 벤츠 C클래스 카브리올레(휘),IMPORTED,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1866,20년 셀토스(휘),SUV,4,3,1,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1864,20년 쏘나타DN8(LPG),MIDSIZE,14,14,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1863,20년 쏘나타DN8(휘),MIDSIZE,7,5,2,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1876,20년 올뉴k3(휘),COMPACT,10,10,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1874,20년 올뉴아반떼CN7(휘),COMPACT,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1879,20년 코나(전기),EV,35,35,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1877,20년 테슬라 모델3(전기),IMPORTED,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1899,21/22년 트레일블레이저(휘),SUV,8,8,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1884,21년 4세대 더올뉴투싼(휘),SUV,7,7,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1883,21년 4세대 쏘렌토(7인/휘),SUV,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1888,21년 4세대 카니발 리무진 7인승(경유),RV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1887,21년 G80(휘),LUXURY,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1885,21년 GV70(5인/휘),SUV,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1897,21년 GV80(5인/휘),SUV,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1896,21년 K3(휘),COMPACT,10,10,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1891,21년 K5(휘),MIDSIZE,10,0,10,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1894,21년 QM6(휘),SUV,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1889,21년 벤츠 C클래스 카브리올레(휘),IMPORTED,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1886,21년 벤츠G63 AMG 지바겐(휘),SUPERCAR,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1892,21년 쏘나타DN8(휘),MIDSIZE,10,0,10,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1890,21년 아우디A5 카브리올레(휘),IMPORTED,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1902,21년 아이오닉5(전기),EV,10,10,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1882,21년 올뉴아반떼CN7(휘),COMPACT,15,15,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1908,22년 BMW 미니 컨버터블(휘),IMPORTED,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1919,22년 BMW 미니 컨버터블S(휘),IMPORTED,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1905,22년 EV6(전기),EV,21,21,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1906,22년 k3(휘),COMPACT,21,21,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1916,22년 K5(휘),MIDSIZE,9,9,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1917,22년 XM3(휘),SUV,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1914,22년 니로 하이브리드(휘),SUV,8,8,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1915,22년 모닝(휘),URBAN,15,15,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1903,22년 베뉴(휘),SUV,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1921,22년 볼보 XC40(휘),IMPORTED,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1912,22년 스포티지 하이브리드(휘),SUV,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1913,22년 쏘렌토 하이브리드(7인/휘),SUV,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1907,22년 캐스퍼(휘),URBAN,10,10,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1918,22년 포르쉐 718박스터 컨버터블(휘),SUPERCAR,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1931,23년 4세대 쏘렌토(5인/경유),SUV,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1930,23년 4세대 쏘렌토(5인/휘),SUV,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1932,23년 4세대 쏘렌토(7인/휘),SUV,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1926,23년 4세대 카니발 9인승(경유),RV,21,21,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1924,23년 4세대 카니발 9인승(휘),RV,7,7,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1925,23년 4세대 카니발 리무진 7인승(경유),RV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1941,23년 GV70(5인/휘),SUV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1936,23년 GV80 4륜(7인/휘),SUV,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1923,23년 K8(LPG),LUXURY,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1940,23년 디올뉴 그랜저(휘),LUXURY,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1929,23년 머스탱컨버터블(휘),IMPORTED,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1938,23년 스타리아  9인승 4륜(경유),RV,10,10,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1922,23년 쏠라티(15인/경유),RV,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1935,23년 지프 랭글러 파워탑(휘),IMPORTED,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1933,23년 카니발 하이리무진 9인승(경유),RV,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1928,23년 투싼 하이브리드(휘),SUV,7,7,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1956,24년 BMW 420i 컨버터블(휘),IMPORTED,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1934,24년 BMW 미니 컨버터블(휘),IMPORTED,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1972,24년 G80 4륜(휘),LUXURY,3,3,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1970,24년 더 뉴 K3(휘),COMPACT,9,9,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1946,24년 더 뉴 K5 하이브리드(휘),MIDSIZE,10,10,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1952,24년 더 뉴 K5(휘),MIDSIZE,8,8,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1959,24년 더 뉴 셀토스(휘),SUV,11,11,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1944,24년 더 뉴 쏘렌토 4륜(7인/휘),SUV,13,13,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1957,24년 더 뉴 쏘렌토 하이브리드 4륜(5인/휘),SUV,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1951,24년 더 뉴 쏘렌토 하이브리드(7인/휘),SUV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1942,24년 더 뉴 아반떼(휘),COMPACT,16,16,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1969,24년 더 뉴 카니발 9인승(경유),RV,11,11,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1976,24년 더 뉴 카니발 9인승(휘),RV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1958,24년 더 뉴 카니발 하이브리드 9인승(휘),RV,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1973,24년 더 뉴 카니발리무진 7인(경유),RV,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1975,24년 더 뉴 투싼 4륜(휘),SUV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1953,24년 더 올뉴머스탱컨버터블2.3 (휘),IMPORTED,8,8,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1947,24년 더뉴그랜저 하이브리드(휘),LUXURY,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1943,24년 디올뉴 싼타페 4륜(7인/휘),SUV,11,11,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1939,24년 레이(휘),URBAN,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1968,24년 벤츠 CLE 컨버터블(휘),IMPORTED,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1948,24년 스타리아  11인승(경유),RV,8,8,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1945,24년 스타리아 11인승 4륜(경유),RV,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1950,24년 스타리아라운지 4륜 7인승(경유),RV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1971,24년 싼타페 하이브리드 4륜 (7인/휘),SUV,9,9,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1974,24년 쏘나타 디엣지 하이브리드(휘),MIDSIZE,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1937,24년 쏘나타 디엣지(휘),MIDSIZE,15,15,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1949,24년 쏠라티(15인/경유),RV,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1960,24년 카니발 하이리무진 9인승(경유),RV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,1977,24년 코나(휘),SUV,5,5,0,1,0.2,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2227,25년 BMW X7 xdrive40i 하이브리드(휘),SUPERCAR,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2214,25년 BMW 미니 컨버터블(휘),IMPORTED,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2141,25년 BMW 미니 컨트리맨 4륜(휘),IMPORTED,6,6,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2099,25년 EV3(전기),EV,11,11,0,1,0.09090909090909091,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2102,25년 G80 4륜(휘),LUXURY,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2133,25년 GV70 4륜(5인/휘),SUV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2120,25년 GV80 4륜(7인/휘),SUV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2103,25년 GV80 쿠페 4륜(5인/휘),SUV,2,2,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2117,25년 더뉴스포티지 하이브리드 4륜(휘),SUV,13,13,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2106,25년 레이(휘),URBAN,20,20,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2111,25년 쏠라티(15인/경유),RV,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2155,25년 아반떼 하이브리드(휘),COMPACT,15,15,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2224,25년 카니발 리무진 하이브리드 7인(휘),RV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2105,25년 카니발 하이브리드 9인승(휘),RV,8,8,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2124,25년 카니발리무진 7인승(경유),RV,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2123,25년 카니발리무진 7인승(휘),RV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2104,25년 투싼 4륜(휘),SUV,6,6,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2143,25년 투싼 하이브리드 4륜(휘),SUV,10,10,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2217,25년 팰리세이드 4륜(휘),SUV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2250,25년 팰리세이드 하이브리드 4륜 (휘),SUV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2213,25년 포르쉐 카이엔 하이브리드 쿠페 4륜,SUPERCAR,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2256,26년  스포티지(휘),SUV,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2252,26년 BMW 420i 컨버터블(휘),IMPORTED,6,6,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2293,26년 BMW 520i  M스포츠(휘),IMPORTED,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2253,26년 BMW X6 xdrive30d M sport(경유),SUPERCAR,1,0,1,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2307,26년 EV4(전기),EV,6,6,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2289,26년 그랜저 GN7(휘),LUXURY,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2290,26년 더 K5 고급형 (휘),MIDSIZE,15,15,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2291,26년 더 K5 하이브리드(휘),MIDSIZE,7,7,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2297,26년 더 K5(휘),MIDSIZE,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2282,26년 더 K8(휘),LUXURY,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2262,26년 레이(휘),URBAN,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2286,26년 스타리아 11인승 하이브리드(휘),RV,5,5,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2288,26년 스포티지 4륜(휘),SUV,10,10,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2254,26년 쏠라티(15인/경유),RV,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2295,26년 아반떼(휘),COMPACT,16,16,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2326,26년 아우디 Q4 e-tron,IMPORTED,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2329,26년 아우디Q5 40 TDI quattro,IMPORTED,1,1,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2257,26년 카니발리무진 7인승(휘),RV,8,8,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2312,26년 테슬라 모델Y RWD(전기),IMPORTED,7,7,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2255,26년 투싼(휘),SUV,4,4,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2263,26년 팰리세이드4륜(휘),SUV,13,13,0,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.
+2026-08-18,2026-08-18 06:17:45 UTC,2100,업무용차량,CITY,7,0,7,0,0.0,derived_from_observed_current_snapshot,Single UTC snapshot only; not historical fleet availability or true utilization.

@@ -1,0 +1,2 @@
+﻿excluded_rule,excluded_canonical_users,reason
+identity_level == reservation_id,1176,customer_id 없이 reservation_id만 있는 단위는 유저 분석에서 이상치/미식별 예약 단위로 제외

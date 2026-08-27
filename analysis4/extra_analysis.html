@@ -1,0 +1,1382 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>연식 전환 기반 보유기간 대시보드</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 32px; color: #1f2933; }
+    h1 { font-size: 26px; margin-bottom: 6px; }
+    h2 { font-size: 18px; margin-top: 28px; border-bottom: 1px solid #d9e2ec; padding-bottom: 6px; }
+    .note { color: #52606d; font-size: 13px; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(160px, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric { border: 1px solid #d9e2ec; border-radius: 6px; padding: 12px; background: #f8fafc; }
+    .label { color: #52606d; font-size: 12px; }
+    .value { font-size: 20px; font-weight: 650; margin-top: 4px; }
+    .dash { display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 16px; margin-top: 12px; }
+    .panel { border: 1px solid #d9e2ec; border-radius: 6px; padding: 14px; background: #ffffff; }
+    .panel-title { font-size: 13px; font-weight: 650; margin-bottom: 10px; color: #243b53; }
+    .bar-row { display: grid; grid-template-columns: minmax(130px, 1.2fr) minmax(160px, 2fr) 100px; gap: 10px; align-items: center; margin: 8px 0; }
+    .bar-label { font-size: 12px; color: #334e68; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 10px; background: #edf2f7; border-radius: 5px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 5px; }
+    .bar-value { font-size: 12px; color: #243b53; text-align: right; }
+    .depreciation-tool { border: 1px solid #d9e2ec; border-radius: 6px; padding: 14px; background: #ffffff; margin-top: 12px; }
+    .control-row { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: end; margin-bottom: 12px; }
+    .control-row label { display: flex; flex-direction: column; gap: 4px; color: #52606d; font-size: 12px; }
+    .control-row select, .control-row input { border: 1px solid #bcccdc; border-radius: 4px; padding: 6px 8px; min-height: 32px; font-size: 13px; color: #243b53; background: #fff; }
+    .control-row select { min-width: 190px; }
+    .control-row input { width: 92px; }
+    .control-row label:first-child select { width: 240px; }
+    .chart-wrap { width: 100%; overflow-x: auto; border: 1px solid #edf2f7; }
+    .chart-wrap svg { display: block; width: 100%; min-width: 760px; height: auto; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; color: #334e68; font-size: 12px; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+    .chart-summary { margin-top: 10px; color: #243b53; font-size: 13px; line-height: 1.5; }
+    .insights { margin: 10px 0 0 18px; color: #334e68; font-size: 13px; line-height: 1.6; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 10px; }
+    th, td { border: 1px solid #d9e2ec; padding: 6px 8px; text-align: right; }
+    th:first-child, td:first-child, th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) { text-align: left; }
+    th { background: #edf2f7; }
+    .good { color: #166534; font-weight: 650; }
+    .bad { color: #9a3412; font-weight: 650; }
+    @media (max-width: 900px) {
+      .grid, .dash { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; gap: 4px; }
+      .bar-value { text-align: left; }
+      .control-row { display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      .control-row label:first-child { grid-column: 1 / -1; }
+      .control-row label:first-child select, .control-row input { width: 100%; box-sizing: border-box; }
+    }
+  </style>
+</head>
+<body>
+  <h1>연식 전환 기반 보유기간 대시보드</h1>
+  <div class="note">고정된 6년 기준이 아니라, 같은 차종 안에서 최신 연식이 존재할 때 구형 연식의 매출·예약·점유율이 유지되는지 비교했습니다.
+  예: 2020년 모델과 2023년 모델이 함께 있는 차종에서 2020년 모델의 최근 매출 유지율과 최신 연식 쏠림을 봅니다.</div>
+  <div class="grid">
+    <div class="metric"><div class="label">신형 비교 가능한 구형 연식</div><div class="value">71개</div></div>
+    <div class="metric"><div class="label">구형도 보유 가치 있음</div><div class="value">12개</div></div>
+    <div class="metric"><div class="label">신형 전환 영향 큼</div><div class="value">30개</div></div>
+    <div class="metric"><div class="label">차종 단위 비교 가능</div><div class="value">29개</div></div>
+  </div>
+  <h2>결론</h2>
+  <ul class="insights">
+    <li><span class="good">구형도 보유 가치 있음</span>: 최근 3개월에도 예약과 보유일당 매출이 유지되고, 같은 차종 내 매출 점유율이 남아있는 연식입니다.</li>
+    <li><span class="bad">신형 전환 영향 큼</span>: 최신 연식이 같은 차종 매출을 가져가면서 구형 연식의 최근 매출/예약 유지율 또는 점유율이 크게 떨어진 연식입니다.</li>
+    <li>차종 단위 비교도 가능합니다. `model_family`로 묶어 구형 연식 전체가 유지되는 차종과 신형 쏠림 차종을 분리했습니다.</li>
+    <li>감가상각 데이터가 없으므로 최종 결론은 아직 운영 수익성 신호입니다. 매입/매도 데이터가 들어오면 이 분류에 감가 비용을 더해 ROI 기준으로 바꿔야 합니다.</li>
+  </ul>
+  <h2>대시보드</h2>
+  <div class="dash">
+    <div class="panel"><div class="panel-title">구형 연식도 보유 가치 있음</div><div class="bar-row"><div class="bar-label">투싼 2025년형</div><div class="bar-track"><div class="bar-fill" style="width:100.0%; background:#1f8a70;"></div></div><div class="bar-value">95점</div></div>
+<div class="bar-row"><div class="bar-label">레이 2025년형</div><div class="bar-track"><div class="bar-fill" style="width:95.8%; background:#1f8a70;"></div></div><div class="bar-value">91점</div></div>
+<div class="bar-row"><div class="bar-label">카니발 2025년형</div><div class="bar-track"><div class="bar-fill" style="width:89.0%; background:#1f8a70;"></div></div><div class="bar-value">85점</div></div>
+<div class="bar-row"><div class="bar-label">K3 2022년형</div><div class="bar-track"><div class="bar-fill" style="width:87.7%; background:#1f8a70;"></div></div><div class="bar-value">83점</div></div>
+<div class="bar-row"><div class="bar-label">코나 2020년형</div><div class="bar-track"><div class="bar-fill" style="width:87.0%; background:#1f8a70;"></div></div><div class="bar-value">83점</div></div>
+<div class="bar-row"><div class="bar-label">카니발 2024년형</div><div class="bar-track"><div class="bar-fill" style="width:85.4%; background:#1f8a70;"></div></div><div class="bar-value">81점</div></div>
+<div class="bar-row"><div class="bar-label">아반떼 2024년형</div><div class="bar-track"><div class="bar-fill" style="width:85.4%; background:#1f8a70;"></div></div><div class="bar-value">81점</div></div>
+<div class="bar-row"><div class="bar-label">K5 2024년형</div><div class="bar-track"><div class="bar-fill" style="width:84.9%; background:#1f8a70;"></div></div><div class="bar-value">81점</div></div></div>
+    <div class="panel"><div class="panel-title">신형 전환 영향 큰 구형 연식</div><div class="bar-row"><div class="bar-label">팰리세이드 2023년형</div><div class="bar-track"><div class="bar-fill" style="width:100.0%; background:#c2410c;"></div></div><div class="bar-value">91점</div></div>
+<div class="bar-row"><div class="bar-label">QM6 2020년형</div><div class="bar-track"><div class="bar-fill" style="width:95.2%; background:#c2410c;"></div></div><div class="bar-value">86점</div></div>
+<div class="bar-row"><div class="bar-label">BMW 420i 2022년형</div><div class="bar-track"><div class="bar-fill" style="width:91.3%; background:#c2410c;"></div></div><div class="bar-value">83점</div></div>
+<div class="bar-row"><div class="bar-label">머스탱 2020년형</div><div class="bar-track"><div class="bar-fill" style="width:88.3%; background:#c2410c;"></div></div><div class="bar-value">80점</div></div>
+<div class="bar-row"><div class="bar-label">싼타페 2019년형</div><div class="bar-track"><div class="bar-fill" style="width:88.2%; background:#c2410c;"></div></div><div class="bar-value">80점</div></div>
+<div class="bar-row"><div class="bar-label">모닝 2018년형</div><div class="bar-track"><div class="bar-fill" style="width:86.0%; background:#c2410c;"></div></div><div class="bar-value">78점</div></div>
+<div class="bar-row"><div class="bar-label">쏘나타 2021년형</div><div class="bar-track"><div class="bar-fill" style="width:84.6%; background:#c2410c;"></div></div><div class="bar-value">77점</div></div>
+<div class="bar-row"><div class="bar-label">K5 2021년형</div><div class="bar-track"><div class="bar-fill" style="width:83.8%; background:#c2410c;"></div></div><div class="bar-value">76점</div></div></div>
+    <div class="panel"><div class="panel-title">차종 단위: 구형도 유지</div><div class="bar-row"><div class="bar-label">코나</div><div class="bar-track"><div class="bar-fill" style="width:100.0%; background:#6f42c1;"></div></div><div class="bar-value">83점</div></div>
+<div class="bar-row"><div class="bar-label">투싼</div><div class="bar-track"><div class="bar-fill" style="width:93.1%; background:#6f42c1;"></div></div><div class="bar-value">77점</div></div>
+<div class="bar-row"><div class="bar-label">스포티지</div><div class="bar-track"><div class="bar-fill" style="width:79.4%; background:#6f42c1;"></div></div><div class="bar-value">66점</div></div>
+<div class="bar-row"><div class="bar-label">레이</div><div class="bar-track"><div class="bar-fill" style="width:70.6%; background:#6f42c1;"></div></div><div class="bar-value">58점</div></div></div>
+    <div class="panel"><div class="panel-title">차종 단위: 신형 쏠림</div><div class="bar-row"><div class="bar-label">QM6</div><div class="bar-track"><div class="bar-fill" style="width:100.0%; background:#b45309;"></div></div><div class="bar-value">86점</div></div>
+<div class="bar-row"><div class="bar-label">팰리세이드</div><div class="bar-track"><div class="bar-fill" style="width:74.8%; background:#b45309;"></div></div><div class="bar-value">65점</div></div>
+<div class="bar-row"><div class="bar-label">K8</div><div class="bar-track"><div class="bar-fill" style="width:72.3%; background:#b45309;"></div></div><div class="bar-value">62점</div></div>
+<div class="bar-row"><div class="bar-label">BMW 420i</div><div class="bar-track"><div class="bar-fill" style="width:69.2%; background:#b45309;"></div></div><div class="bar-value">60점</div></div>
+<div class="bar-row"><div class="bar-label">포르쉐</div><div class="bar-track"><div class="bar-fill" style="width:39.0%; background:#b45309;"></div></div><div class="bar-value">34점</div></div></div>
+  </div>
+  
+  <h2>차종별 매출·감가 시뮬레이션</h2>
+  <p class="note">감가상각 원장은 아직 없으므로 아래 그래프의 감가선은 클래스별 기본 차량가와 연차별 감가율을 적용한 추정치입니다.
+  매출선은 실제 월별 보유일당 매출을 차령 0.25년 단위로 묶은 값이며, 감가 가정은 입력값을 바꿔 즉시 재계산할 수 있습니다.</p>
+  <div class="depreciation-tool">
+    <div class="control-row">
+      <label>차종 <select id="depreciationModelSelect"></select></label>
+      <label>차량가 <input id="purchasePriceInput" type="number" min="1000000" step="1000000"></label>
+      <label>1년차 <input id="rateYear1Input" type="number" min="0" max="80" step="1" value="18">%</label>
+      <label>2년차 <input id="rateYear2Input" type="number" min="0" max="80" step="1" value="14">%</label>
+      <label>3년차 <input id="rateYear3Input" type="number" min="0" max="80" step="1" value="11">%</label>
+      <label>이후 <input id="rateLaterInput" type="number" min="0" max="80" step="1" value="8">%</label>
+      <label>잔존하한 <input id="floorPctInput" type="number" min="0" max="90" step="5" value="25">%</label>
+    </div>
+    <div class="chart-wrap">
+      <svg id="depreciationChart" viewBox="0 0 980 420" role="img" aria-label="차종별 매출 감가 비교 그래프"></svg>
+    </div>
+    <div class="legend">
+      <span><i style="background:#2563eb"></i> 보유일당 매출</span>
+      <span><i style="background:#dc2626"></i> 추정 감가/일</span>
+      <span><i style="background:#166534"></i> 매출-감가</span>
+    </div>
+    <div id="depreciationSummary" class="chart-summary"></div>
+  </div>
+  <script>
+    const depreciationData = [{"modelFamily": "카니발", "vehicleClass": "RV", "sortOrder": 0, "defaultPurchasePriceKrw": 45000000, "points": [{"age": 0.0, "revenuePerFleetDay": 22264.0, "fleetVehicleDays": 1227.0, "reservationCount": 120.0, "utilizationRate": 0.2456}, {"age": 0.25, "revenuePerFleetDay": 21483.3, "fleetVehicleDays": 2314.0, "reservationCount": 243.0, "utilizationRate": 0.2642}, {"age": 0.5, "revenuePerFleetDay": 28854.6, "fleetVehicleDays": 2600.0, "reservationCount": 294.0, "utilizationRate": 0.2987}, {"age": 0.75, "revenuePerFleetDay": 35277.5, "fleetVehicleDays": 2002.0, "reservationCount": 297.0, "utilizationRate": 0.3628}, {"age": 1.0, "revenuePerFleetDay": 16181.7, "fleetVehicleDays": 3573.0, "reservationCount": 273.0, "utilizationRate": 0.1878}, {"age": 1.25, "revenuePerFleetDay": 16962.3, "fleetVehicleDays": 4508.0, "reservationCount": 346.0, "utilizationRate": 0.197}, {"age": 1.5, "revenuePerFleetDay": 20151.7, "fleetVehicleDays": 4068.0, "reservationCount": 330.0, "utilizationRate": 0.2221}, {"age": 1.75, "revenuePerFleetDay": 17329.9, "fleetVehicleDays": 2457.0, "reservationCount": 206.0, "utilizationRate": 0.2156}, {"age": 2.0, "revenuePerFleetDay": 10853.8, "fleetVehicleDays": 4554.0, "reservationCount": 232.0, "utilizationRate": 0.1282}, {"age": 2.25, "revenuePerFleetDay": 6975.4, "fleetVehicleDays": 5796.0, "reservationCount": 212.0, "utilizationRate": 0.096}, {"age": 2.5, "revenuePerFleetDay": 12091.3, "fleetVehicleDays": 5256.0, "reservationCount": 257.0, "utilizationRate": 0.1443}, {"age": 2.75, "revenuePerFleetDay": 7440.4, "fleetVehicleDays": 3276.0, "reservationCount": 131.0, "utilizationRate": 0.1018}, {"age": 3.0, "revenuePerFleetDay": 6894.6, "fleetVehicleDays": 3240.0, "reservationCount": 117.0, "utilizationRate": 0.1059}, {"age": 3.25, "revenuePerFleetDay": 3189.3, "fleetVehicleDays": 3312.0, "reservationCount": 65.0, "utilizationRate": 0.0526}, {"age": 3.5, "revenuePerFleetDay": 4804.3, "fleetVehicleDays": 2592.0, "reservationCount": 55.0, "utilizationRate": 0.0612}, {"age": 4.0, "revenuePerFleetDay": 947.3, "fleetVehicleDays": 885.0, "reservationCount": 7.0, "utilizationRate": 0.0188}, {"age": 4.25, "revenuePerFleetDay": 3708.7, "fleetVehicleDays": 850.0, "reservationCount": 13.0, "utilizationRate": 0.0455}, {"age": 4.5, "revenuePerFleetDay": 7156.2, "fleetVehicleDays": 460.0, "reservationCount": 15.0, "utilizationRate": 0.0982}, {"age": 4.75, "revenuePerFleetDay": 7547.2, "fleetVehicleDays": 455.0, "reservationCount": 19.0, "utilizationRate": 0.0966}, {"age": 5.0, "revenuePerFleetDay": 6182.3, "fleetVehicleDays": 450.0, "reservationCount": 15.0, "utilizationRate": 0.1004}, {"age": 5.25, "revenuePerFleetDay": 1894.6, "fleetVehicleDays": 460.0, "reservationCount": 6.0, "utilizationRate": 0.0305}, {"age": 5.5, "revenuePerFleetDay": 3927.7, "fleetVehicleDays": 360.0, "reservationCount": 6.0, "utilizationRate": 0.0514}, {"age": 6.0, "revenuePerFleetDay": 605.7, "fleetVehicleDays": 531.0, "reservationCount": 3.0, "utilizationRate": 0.0144}, {"age": 6.25, "revenuePerFleetDay": 2984.3, "fleetVehicleDays": 828.0, "reservationCount": 15.0, "utilizationRate": 0.0493}, {"age": 6.5, "revenuePerFleetDay": 4756.9, "fleetVehicleDays": 828.0, "reservationCount": 13.0, "utilizationRate": 0.0461}, {"age": 6.75, "revenuePerFleetDay": 6828.3, "fleetVehicleDays": 819.0, "reservationCount": 24.0, "utilizationRate": 0.0873}, {"age": 7.0, "revenuePerFleetDay": 1327.4, "fleetVehicleDays": 1813.0, "reservationCount": 14.0, "utilizationRate": 0.0223}, {"age": 7.25, "revenuePerFleetDay": 1727.2, "fleetVehicleDays": 1771.0, "reservationCount": 21.0, "utilizationRate": 0.0264}, {"age": 7.5, "revenuePerFleetDay": 1941.2, "fleetVehicleDays": 1363.0, "reservationCount": 9.0, "utilizationRate": 0.023}, {"age": 7.75, "revenuePerFleetDay": 1879.7, "fleetVehicleDays": 728.0, "reservationCount": 7.0, "utilizationRate": 0.0255}, {"age": 8.0, "revenuePerFleetDay": 3302.0, "fleetVehicleDays": 720.0, "reservationCount": 15.0, "utilizationRate": 0.0565}, {"age": 8.25, "revenuePerFleetDay": 858.5, "fleetVehicleDays": 736.0, "reservationCount": 4.0, "utilizationRate": 0.0206}, {"age": 8.5, "revenuePerFleetDay": 570.8, "fleetVehicleDays": 576.0, "reservationCount": 3.0, "utilizationRate": 0.009}]}, {"modelFamily": "아반떼", "vehicleClass": "COMPACT", "sortOrder": 1, "defaultPurchasePriceKrw": 25000000, "points": [{"age": 0.0, "revenuePerFleetDay": 10200.3, "fleetVehicleDays": 134.0, "reservationCount": 23.0, "utilizationRate": 0.2873}, {"age": 0.25, "revenuePerFleetDay": 12333.6, "fleetVehicleDays": 1719.0, "reservationCount": 269.0, "utilizationRate": 0.3293}, {"age": 0.5, "revenuePerFleetDay": 19700.4, "fleetVehicleDays": 2440.0, "reservationCount": 378.0, "utilizationRate": 0.3633}, {"age": 0.75, "revenuePerFleetDay": 25529.5, "fleetVehicleDays": 1347.0, "reservationCount": 359.0, "utilizationRate": 0.5527}, {"age": 1.0, "revenuePerFleetDay": 11543.1, "fleetVehicleDays": 2294.0, "reservationCount": 304.0, "utilizationRate": 0.2932}, {"age": 1.25, "revenuePerFleetDay": 10444.1, "fleetVehicleDays": 2852.0, "reservationCount": 336.0, "utilizationRate": 0.284}, {"age": 1.5, "revenuePerFleetDay": 12495.7, "fleetVehicleDays": 2552.0, "reservationCount": 266.0, "utilizationRate": 0.2641}, {"age": 1.75, "revenuePerFleetDay": 15415.7, "fleetVehicleDays": 1456.0, "reservationCount": 244.0, "utilizationRate": 0.3846}, {"age": 2.0, "revenuePerFleetDay": 12569.1, "fleetVehicleDays": 1440.0, "reservationCount": 228.0, "utilizationRate": 0.327}, {"age": 2.25, "revenuePerFleetDay": 8711.6, "fleetVehicleDays": 1472.0, "reservationCount": 185.0, "utilizationRate": 0.2846}, {"age": 2.5, "revenuePerFleetDay": 12965.4, "fleetVehicleDays": 1152.0, "reservationCount": 120.0, "utilizationRate": 0.2772}, {"age": 4.0, "revenuePerFleetDay": 606.6, "fleetVehicleDays": 885.0, "reservationCount": 10.0, "utilizationRate": 0.0244}, {"age": 4.25, "revenuePerFleetDay": 3024.3, "fleetVehicleDays": 1380.0, "reservationCount": 63.0, "utilizationRate": 0.125}, {"age": 4.5, "revenuePerFleetDay": 4993.0, "fleetVehicleDays": 1380.0, "reservationCount": 63.0, "utilizationRate": 0.127}, {"age": 4.75, "revenuePerFleetDay": 7393.3, "fleetVehicleDays": 1365.0, "reservationCount": 135.0, "utilizationRate": 0.2423}, {"age": 5.0, "revenuePerFleetDay": 4908.7, "fleetVehicleDays": 1645.0, "reservationCount": 103.0, "utilizationRate": 0.1548}, {"age": 5.25, "revenuePerFleetDay": 2511.4, "fleetVehicleDays": 1840.0, "reservationCount": 88.0, "utilizationRate": 0.1033}, {"age": 5.5, "revenuePerFleetDay": 2894.4, "fleetVehicleDays": 1540.0, "reservationCount": 40.0, "utilizationRate": 0.0683}, {"age": 5.75, "revenuePerFleetDay": 1786.9, "fleetVehicleDays": 455.0, "reservationCount": 11.0, "utilizationRate": 0.0622}, {"age": 6.0, "revenuePerFleetDay": 1044.9, "fleetVehicleDays": 922.0, "reservationCount": 13.0, "utilizationRate": 0.0336}, {"age": 6.25, "revenuePerFleetDay": 159.9, "fleetVehicleDays": 772.0, "reservationCount": 3.0, "utilizationRate": 0.0074}, {"age": 6.5, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 360.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "투싼", "vehicleClass": "SUV", "sortOrder": 2, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 0.0, "revenuePerFleetDay": 22867.5, "fleetVehicleDays": 626.0, "reservationCount": 111.0, "utilizationRate": 0.3828}, {"age": 0.25, "revenuePerFleetDay": 15267.9, "fleetVehicleDays": 1775.0, "reservationCount": 226.0, "utilizationRate": 0.2877}, {"age": 0.5, "revenuePerFleetDay": 29144.9, "fleetVehicleDays": 1760.0, "reservationCount": 342.0, "utilizationRate": 0.4698}, {"age": 0.75, "revenuePerFleetDay": 28544.3, "fleetVehicleDays": 1456.0, "reservationCount": 304.0, "utilizationRate": 0.4622}, {"age": 1.0, "revenuePerFleetDay": 22421.4, "fleetVehicleDays": 1735.0, "reservationCount": 289.0, "utilizationRate": 0.3864}, {"age": 1.25, "revenuePerFleetDay": 14102.8, "fleetVehicleDays": 1932.0, "reservationCount": 203.0, "utilizationRate": 0.2691}, {"age": 1.5, "revenuePerFleetDay": 15589.8, "fleetVehicleDays": 1612.0, "reservationCount": 169.0, "utilizationRate": 0.2639}, {"age": 1.75, "revenuePerFleetDay": 17086.7, "fleetVehicleDays": 455.0, "reservationCount": 50.0, "utilizationRate": 0.281}, {"age": 2.0, "revenuePerFleetDay": 8587.7, "fleetVehicleDays": 863.0, "reservationCount": 58.0, "utilizationRate": 0.1659}, {"age": 2.25, "revenuePerFleetDay": 3924.4, "fleetVehicleDays": 1104.0, "reservationCount": 42.0, "utilizationRate": 0.0997}, {"age": 2.5, "revenuePerFleetDay": 11286.2, "fleetVehicleDays": 1004.0, "reservationCount": 73.0, "utilizationRate": 0.2093}, {"age": 2.75, "revenuePerFleetDay": 10032.2, "fleetVehicleDays": 637.0, "reservationCount": 55.0, "utilizationRate": 0.2107}, {"age": 3.0, "revenuePerFleetDay": 8087.5, "fleetVehicleDays": 630.0, "reservationCount": 42.0, "utilizationRate": 0.1881}, {"age": 3.25, "revenuePerFleetDay": 6298.7, "fleetVehicleDays": 644.0, "reservationCount": 37.0, "utilizationRate": 0.142}, {"age": 3.5, "revenuePerFleetDay": 6007.4, "fleetVehicleDays": 504.0, "reservationCount": 18.0, "utilizationRate": 0.1172}, {"age": 4.0, "revenuePerFleetDay": 1539.5, "fleetVehicleDays": 413.0, "reservationCount": 6.0, "utilizationRate": 0.0321}, {"age": 4.25, "revenuePerFleetDay": 534.1, "fleetVehicleDays": 644.0, "reservationCount": 5.0, "utilizationRate": 0.0188}, {"age": 4.5, "revenuePerFleetDay": 2784.9, "fleetVehicleDays": 644.0, "reservationCount": 17.0, "utilizationRate": 0.076}, {"age": 4.75, "revenuePerFleetDay": 6416.2, "fleetVehicleDays": 637.0, "reservationCount": 29.0, "utilizationRate": 0.1531}, {"age": 5.0, "revenuePerFleetDay": 4291.9, "fleetVehicleDays": 630.0, "reservationCount": 29.0, "utilizationRate": 0.1189}, {"age": 5.25, "revenuePerFleetDay": 1030.7, "fleetVehicleDays": 644.0, "reservationCount": 10.0, "utilizationRate": 0.0272}, {"age": 5.5, "revenuePerFleetDay": 2915.1, "fleetVehicleDays": 504.0, "reservationCount": 9.0, "utilizationRate": 0.0477}]}, {"modelFamily": "K5", "vehicleClass": "MIDSIZE", "sortOrder": 3, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 0.0, "revenuePerFleetDay": 12116.3, "fleetVehicleDays": 468.0, "reservationCount": 65.0, "utilizationRate": 0.2993}, {"age": 0.25, "revenuePerFleetDay": 10048.4, "fleetVehicleDays": 2392.0, "reservationCount": 295.0, "utilizationRate": 0.2621}, {"age": 0.5, "revenuePerFleetDay": 12659.3, "fleetVehicleDays": 1899.0, "reservationCount": 181.0, "utilizationRate": 0.2478}, {"age": 1.0, "revenuePerFleetDay": 4115.7, "fleetVehicleDays": 1062.0, "reservationCount": 65.0, "utilizationRate": 0.1324}, {"age": 1.25, "revenuePerFleetDay": 9974.8, "fleetVehicleDays": 1656.0, "reservationCount": 198.0, "utilizationRate": 0.2584}, {"age": 1.5, "revenuePerFleetDay": 18892.3, "fleetVehicleDays": 1656.0, "reservationCount": 230.0, "utilizationRate": 0.3567}, {"age": 1.75, "revenuePerFleetDay": 18368.1, "fleetVehicleDays": 1638.0, "reservationCount": 273.0, "utilizationRate": 0.4106}, {"age": 2.0, "revenuePerFleetDay": 17006.6, "fleetVehicleDays": 1620.0, "reservationCount": 271.0, "utilizationRate": 0.3612}, {"age": 2.25, "revenuePerFleetDay": 10072.7, "fleetVehicleDays": 1656.0, "reservationCount": 224.0, "utilizationRate": 0.2876}, {"age": 2.5, "revenuePerFleetDay": 10347.2, "fleetVehicleDays": 1296.0, "reservationCount": 120.0, "utilizationRate": 0.2342}, {"age": 3.0, "revenuePerFleetDay": 787.9, "fleetVehicleDays": 1003.0, "reservationCount": 13.0, "utilizationRate": 0.0278}, {"age": 3.25, "revenuePerFleetDay": 1969.9, "fleetVehicleDays": 1564.0, "reservationCount": 46.0, "utilizationRate": 0.0658}, {"age": 3.5, "revenuePerFleetDay": 7498.6, "fleetVehicleDays": 1564.0, "reservationCount": 107.0, "utilizationRate": 0.1672}, {"age": 3.75, "revenuePerFleetDay": 3798.7, "fleetVehicleDays": 1547.0, "reservationCount": 77.0, "utilizationRate": 0.1352}, {"age": 4.0, "revenuePerFleetDay": 2628.4, "fleetVehicleDays": 2120.0, "reservationCount": 64.0, "utilizationRate": 0.079}, {"age": 4.25, "revenuePerFleetDay": 3243.0, "fleetVehicleDays": 1892.0, "reservationCount": 90.0, "utilizationRate": 0.1199}, {"age": 4.5, "revenuePerFleetDay": 3710.3, "fleetVehicleDays": 1568.0, "reservationCount": 47.0, "utilizationRate": 0.0918}, {"age": 4.75, "revenuePerFleetDay": 6093.3, "fleetVehicleDays": 910.0, "reservationCount": 45.0, "utilizationRate": 0.1526}, {"age": 5.0, "revenuePerFleetDay": 852.2, "fleetVehicleDays": 2375.0, "reservationCount": 31.0, "utilizationRate": 0.0288}, {"age": 5.25, "revenuePerFleetDay": 452.0, "fleetVehicleDays": 3181.0, "reservationCount": 19.0, "utilizationRate": 0.0171}, {"age": 5.5, "revenuePerFleetDay": 1344.1, "fleetVehicleDays": 2859.0, "reservationCount": 34.0, "utilizationRate": 0.0296}, {"age": 5.75, "revenuePerFleetDay": 3042.5, "fleetVehicleDays": 2093.0, "reservationCount": 75.0, "utilizationRate": 0.0917}, {"age": 6.0, "revenuePerFleetDay": 2625.9, "fleetVehicleDays": 2070.0, "reservationCount": 59.0, "utilizationRate": 0.0708}, {"age": 6.25, "revenuePerFleetDay": 1054.1, "fleetVehicleDays": 2116.0, "reservationCount": 30.0, "utilizationRate": 0.0338}, {"age": 6.5, "revenuePerFleetDay": 1008.7, "fleetVehicleDays": 1656.0, "reservationCount": 23.0, "utilizationRate": 0.0326}]}, {"modelFamily": "쏘나타", "vehicleClass": "MIDSIZE", "sortOrder": 4, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 1.0, "revenuePerFleetDay": 6015.3, "fleetVehicleDays": 1180.0, "reservationCount": 100.0, "utilizationRate": 0.1932}, {"age": 1.25, "revenuePerFleetDay": 10619.1, "fleetVehicleDays": 1840.0, "reservationCount": 219.0, "utilizationRate": 0.269}, {"age": 1.5, "revenuePerFleetDay": 17177.8, "fleetVehicleDays": 1840.0, "reservationCount": 238.0, "utilizationRate": 0.3297}, {"age": 1.75, "revenuePerFleetDay": 19501.3, "fleetVehicleDays": 1820.0, "reservationCount": 335.0, "utilizationRate": 0.4393}, {"age": 2.0, "revenuePerFleetDay": 19695.1, "fleetVehicleDays": 1800.0, "reservationCount": 344.0, "utilizationRate": 0.4373}, {"age": 2.25, "revenuePerFleetDay": 8560.5, "fleetVehicleDays": 1840.0, "reservationCount": 189.0, "utilizationRate": 0.2584}, {"age": 2.5, "revenuePerFleetDay": 8543.9, "fleetVehicleDays": 1440.0, "reservationCount": 101.0, "utilizationRate": 0.1942}, {"age": 4.0, "revenuePerFleetDay": 1231.3, "fleetVehicleDays": 590.0, "reservationCount": 5.0, "utilizationRate": 0.0309}, {"age": 4.25, "revenuePerFleetDay": 2579.3, "fleetVehicleDays": 920.0, "reservationCount": 26.0, "utilizationRate": 0.0846}, {"age": 4.5, "revenuePerFleetDay": 5692.0, "fleetVehicleDays": 920.0, "reservationCount": 40.0, "utilizationRate": 0.1275}, {"age": 4.75, "revenuePerFleetDay": 5318.1, "fleetVehicleDays": 910.0, "reservationCount": 47.0, "utilizationRate": 0.1364}, {"age": 5.0, "revenuePerFleetDay": 2483.9, "fleetVehicleDays": 2139.0, "reservationCount": 55.0, "utilizationRate": 0.0736}, {"age": 5.25, "revenuePerFleetDay": 969.3, "fleetVehicleDays": 2852.0, "reservationCount": 34.0, "utilizationRate": 0.0315}, {"age": 5.5, "revenuePerFleetDay": 7173.2, "fleetVehicleDays": 2652.0, "reservationCount": 181.0, "utilizationRate": 0.161}, {"age": 5.75, "revenuePerFleetDay": 13472.2, "fleetVehicleDays": 1911.0, "reservationCount": 373.0, "utilizationRate": 0.4143}, {"age": 6.0, "revenuePerFleetDay": 4216.0, "fleetVehicleDays": 1890.0, "reservationCount": 98.0, "utilizationRate": 0.1288}, {"age": 6.25, "revenuePerFleetDay": 592.3, "fleetVehicleDays": 1932.0, "reservationCount": 21.0, "utilizationRate": 0.0277}, {"age": 6.5, "revenuePerFleetDay": 1149.9, "fleetVehicleDays": 1512.0, "reservationCount": 14.0, "utilizationRate": 0.0358}]}, {"modelFamily": "스포티지", "vehicleClass": "SUV", "sortOrder": 5, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 0.0, "revenuePerFleetDay": 13970.2, "fleetVehicleDays": 752.0, "reservationCount": 87.0, "utilizationRate": 0.2562}, {"age": 0.25, "revenuePerFleetDay": 14696.8, "fleetVehicleDays": 2115.0, "reservationCount": 272.0, "utilizationRate": 0.2868}, {"age": 0.5, "revenuePerFleetDay": 24758.4, "fleetVehicleDays": 1988.0, "reservationCount": 296.0, "utilizationRate": 0.3704}, {"age": 0.75, "revenuePerFleetDay": 29031.9, "fleetVehicleDays": 1183.0, "reservationCount": 235.0, "utilizationRate": 0.4671}, {"age": 1.0, "revenuePerFleetDay": 27175.1, "fleetVehicleDays": 1170.0, "reservationCount": 198.0, "utilizationRate": 0.4307}, {"age": 1.25, "revenuePerFleetDay": 9012.4, "fleetVehicleDays": 1196.0, "reservationCount": 87.0, "utilizationRate": 0.1919}, {"age": 1.5, "revenuePerFleetDay": 11839.1, "fleetVehicleDays": 936.0, "reservationCount": 61.0, "utilizationRate": 0.1893}, {"age": 3.0, "revenuePerFleetDay": 1093.5, "fleetVehicleDays": 1062.0, "reservationCount": 13.0, "utilizationRate": 0.0279}, {"age": 3.25, "revenuePerFleetDay": 2459.6, "fleetVehicleDays": 1656.0, "reservationCount": 41.0, "utilizationRate": 0.0579}, {"age": 3.5, "revenuePerFleetDay": 9981.9, "fleetVehicleDays": 1656.0, "reservationCount": 95.0, "utilizationRate": 0.163}, {"age": 3.75, "revenuePerFleetDay": 5818.8, "fleetVehicleDays": 1638.0, "reservationCount": 51.0, "utilizationRate": 0.0846}, {"age": 4.0, "revenuePerFleetDay": 762.1, "fleetVehicleDays": 1620.0, "reservationCount": 10.0, "utilizationRate": 0.0153}, {"age": 4.25, "revenuePerFleetDay": 2222.2, "fleetVehicleDays": 546.0, "reservationCount": 11.0, "utilizationRate": 0.0679}, {"age": 4.5, "revenuePerFleetDay": 10251.0, "fleetVehicleDays": 216.0, "reservationCount": 12.0, "utilizationRate": 0.1387}]}, {"modelFamily": "쏘렌토", "vehicleClass": "SUV", "sortOrder": 6, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 1.0, "revenuePerFleetDay": 4793.4, "fleetVehicleDays": 1298.0, "reservationCount": 47.0, "utilizationRate": 0.0894}, {"age": 1.25, "revenuePerFleetDay": 7222.4, "fleetVehicleDays": 2024.0, "reservationCount": 115.0, "utilizationRate": 0.142}, {"age": 1.5, "revenuePerFleetDay": 18919.1, "fleetVehicleDays": 2024.0, "reservationCount": 218.0, "utilizationRate": 0.282}, {"age": 1.75, "revenuePerFleetDay": 17840.9, "fleetVehicleDays": 2002.0, "reservationCount": 226.0, "utilizationRate": 0.2964}, {"age": 2.0, "revenuePerFleetDay": 14339.3, "fleetVehicleDays": 2393.0, "reservationCount": 211.0, "utilizationRate": 0.243}, {"age": 2.25, "revenuePerFleetDay": 7207.2, "fleetVehicleDays": 2668.0, "reservationCount": 158.0, "utilizationRate": 0.1433}, {"age": 2.5, "revenuePerFleetDay": 11067.7, "fleetVehicleDays": 2228.0, "reservationCount": 135.0, "utilizationRate": 0.1661}, {"age": 2.75, "revenuePerFleetDay": 8975.8, "fleetVehicleDays": 637.0, "reservationCount": 43.0, "utilizationRate": 0.1662}, {"age": 3.0, "revenuePerFleetDay": 9590.7, "fleetVehicleDays": 807.0, "reservationCount": 54.0, "utilizationRate": 0.1734}, {"age": 3.25, "revenuePerFleetDay": 4848.5, "fleetVehicleDays": 920.0, "reservationCount": 38.0, "utilizationRate": 0.0988}, {"age": 3.5, "revenuePerFleetDay": 9167.4, "fleetVehicleDays": 780.0, "reservationCount": 36.0, "utilizationRate": 0.146}, {"age": 3.75, "revenuePerFleetDay": 9523.4, "fleetVehicleDays": 273.0, "reservationCount": 17.0, "utilizationRate": 0.1691}, {"age": 4.0, "revenuePerFleetDay": 5531.9, "fleetVehicleDays": 447.0, "reservationCount": 16.0, "utilizationRate": 0.1108}, {"age": 4.25, "revenuePerFleetDay": 2579.5, "fleetVehicleDays": 552.0, "reservationCount": 12.0, "utilizationRate": 0.0615}, {"age": 4.5, "revenuePerFleetDay": 5079.8, "fleetVehicleDays": 492.0, "reservationCount": 19.0, "utilizationRate": 0.1068}, {"age": 4.75, "revenuePerFleetDay": 6764.5, "fleetVehicleDays": 273.0, "reservationCount": 7.0, "utilizationRate": 0.0781}, {"age": 5.0, "revenuePerFleetDay": 6752.0, "fleetVehicleDays": 270.0, "reservationCount": 10.0, "utilizationRate": 0.0961}, {"age": 5.25, "revenuePerFleetDay": 1166.2, "fleetVehicleDays": 276.0, "reservationCount": 5.0, "utilizationRate": 0.034}, {"age": 5.5, "revenuePerFleetDay": 5013.9, "fleetVehicleDays": 216.0, "reservationCount": 3.0, "utilizationRate": 0.0374}, {"age": 7.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 177.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 7.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 117.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "머스탱", "vehicleClass": "IMPORTED", "sortOrder": 7, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 1.0, "revenuePerFleetDay": 7082.9, "fleetVehicleDays": 472.0, "reservationCount": 25.0, "utilizationRate": 0.0966}, {"age": 1.25, "revenuePerFleetDay": 27914.2, "fleetVehicleDays": 736.0, "reservationCount": 112.0, "utilizationRate": 0.3114}, {"age": 1.5, "revenuePerFleetDay": 47594.9, "fleetVehicleDays": 736.0, "reservationCount": 132.0, "utilizationRate": 0.3826}, {"age": 1.75, "revenuePerFleetDay": 43442.4, "fleetVehicleDays": 728.0, "reservationCount": 129.0, "utilizationRate": 0.3632}, {"age": 2.0, "revenuePerFleetDay": 9500.8, "fleetVehicleDays": 956.0, "reservationCount": 40.0, "utilizationRate": 0.0866}, {"age": 2.25, "revenuePerFleetDay": 26762.6, "fleetVehicleDays": 1104.0, "reservationCount": 136.0, "utilizationRate": 0.2724}, {"age": 2.5, "revenuePerFleetDay": 30332.2, "fleetVehicleDays": 944.0, "reservationCount": 105.0, "utilizationRate": 0.2479}, {"age": 2.75, "revenuePerFleetDay": 18147.5, "fleetVehicleDays": 364.0, "reservationCount": 31.0, "utilizationRate": 0.1898}, {"age": 3.0, "revenuePerFleetDay": 7970.9, "fleetVehicleDays": 360.0, "reservationCount": 14.0, "utilizationRate": 0.0867}, {"age": 3.25, "revenuePerFleetDay": 14185.0, "fleetVehicleDays": 368.0, "reservationCount": 29.0, "utilizationRate": 0.1602}, {"age": 3.5, "revenuePerFleetDay": 7816.9, "fleetVehicleDays": 288.0, "reservationCount": 11.0, "utilizationRate": 0.0784}, {"age": 4.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 177.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 4.25, "revenuePerFleetDay": 8001.8, "fleetVehicleDays": 276.0, "reservationCount": 13.0, "utilizationRate": 0.0932}, {"age": 4.5, "revenuePerFleetDay": 22116.0, "fleetVehicleDays": 276.0, "reservationCount": 23.0, "utilizationRate": 0.2116}, {"age": 4.75, "revenuePerFleetDay": 13627.7, "fleetVehicleDays": 273.0, "reservationCount": 22.0, "utilizationRate": 0.1517}, {"age": 5.0, "revenuePerFleetDay": 1159.8, "fleetVehicleDays": 447.0, "reservationCount": 4.0, "utilizationRate": 0.0176}, {"age": 5.25, "revenuePerFleetDay": 6153.2, "fleetVehicleDays": 330.0, "reservationCount": 14.0, "utilizationRate": 0.0965}, {"age": 5.5, "revenuePerFleetDay": 13025.8, "fleetVehicleDays": 276.0, "reservationCount": 19.0, "utilizationRate": 0.1321}, {"age": 5.75, "revenuePerFleetDay": 12348.5, "fleetVehicleDays": 273.0, "reservationCount": 18.0, "utilizationRate": 0.1309}, {"age": 6.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 270.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 6.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 54.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "스타리아", "vehicleClass": "RV", "sortOrder": 8, "defaultPurchasePriceKrw": 45000000, "points": [{"age": 0.0, "revenuePerFleetDay": 14359.9, "fleetVehicleDays": 93.0, "reservationCount": 5.0, "utilizationRate": 0.1402}, {"age": 0.25, "revenuePerFleetDay": 27951.1, "fleetVehicleDays": 460.0, "reservationCount": 56.0, "utilizationRate": 0.2766}, {"age": 0.5, "revenuePerFleetDay": 27862.0, "fleetVehicleDays": 360.0, "reservationCount": 38.0, "utilizationRate": 0.2395}, {"age": 1.0, "revenuePerFleetDay": 3047.1, "fleetVehicleDays": 885.0, "reservationCount": 20.0, "utilizationRate": 0.0525}, {"age": 1.25, "revenuePerFleetDay": 8514.7, "fleetVehicleDays": 1380.0, "reservationCount": 70.0, "utilizationRate": 0.1202}, {"age": 1.5, "revenuePerFleetDay": 17835.4, "fleetVehicleDays": 1380.0, "reservationCount": 109.0, "utilizationRate": 0.2244}, {"age": 1.75, "revenuePerFleetDay": 16821.9, "fleetVehicleDays": 1365.0, "reservationCount": 103.0, "utilizationRate": 0.1854}, {"age": 2.0, "revenuePerFleetDay": 11802.2, "fleetVehicleDays": 1940.0, "reservationCount": 118.0, "utilizationRate": 0.1449}, {"age": 2.25, "revenuePerFleetDay": 9306.3, "fleetVehicleDays": 2300.0, "reservationCount": 109.0, "utilizationRate": 0.1249}, {"age": 2.5, "revenuePerFleetDay": 8947.4, "fleetVehicleDays": 2000.0, "reservationCount": 76.0, "utilizationRate": 0.1075}, {"age": 2.75, "revenuePerFleetDay": 10095.8, "fleetVehicleDays": 910.0, "reservationCount": 37.0, "utilizationRate": 0.1075}, {"age": 3.0, "revenuePerFleetDay": 4915.4, "fleetVehicleDays": 1844.0, "reservationCount": 43.0, "utilizationRate": 0.059}, {"age": 3.25, "revenuePerFleetDay": 3115.2, "fleetVehicleDays": 2392.0, "reservationCount": 46.0, "utilizationRate": 0.0496}, {"age": 3.5, "revenuePerFleetDay": 5303.3, "fleetVehicleDays": 2192.0, "reservationCount": 57.0, "utilizationRate": 0.0678}, {"age": 3.75, "revenuePerFleetDay": 6517.2, "fleetVehicleDays": 1456.0, "reservationCount": 21.0, "utilizationRate": 0.0522}, {"age": 4.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 1440.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 4.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 246.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "팰리세이드", "vehicleClass": "SUV", "sortOrder": 9, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 0.0, "revenuePerFleetDay": 18953.6, "fleetVehicleDays": 620.0, "reservationCount": 76.0, "utilizationRate": 0.2691}, {"age": 0.25, "revenuePerFleetDay": 18235.5, "fleetVehicleDays": 1260.0, "reservationCount": 155.0, "utilizationRate": 0.2912}, {"age": 0.5, "revenuePerFleetDay": 26175.7, "fleetVehicleDays": 1396.0, "reservationCount": 179.0, "utilizationRate": 0.3307}, {"age": 0.75, "revenuePerFleetDay": 35027.0, "fleetVehicleDays": 817.0, "reservationCount": 128.0, "utilizationRate": 0.3587}, {"age": 1.0, "revenuePerFleetDay": 33449.9, "fleetVehicleDays": 900.0, "reservationCount": 145.0, "utilizationRate": 0.3814}, {"age": 1.25, "revenuePerFleetDay": 11599.2, "fleetVehicleDays": 920.0, "reservationCount": 56.0, "utilizationRate": 0.1491}, {"age": 1.5, "revenuePerFleetDay": 15118.4, "fleetVehicleDays": 720.0, "reservationCount": 46.0, "utilizationRate": 0.187}, {"age": 2.0, "revenuePerFleetDay": 2968.1, "fleetVehicleDays": 767.0, "reservationCount": 17.0, "utilizationRate": 0.0614}, {"age": 2.25, "revenuePerFleetDay": 6534.3, "fleetVehicleDays": 1196.0, "reservationCount": 59.0, "utilizationRate": 0.1223}, {"age": 2.5, "revenuePerFleetDay": 14218.7, "fleetVehicleDays": 1196.0, "reservationCount": 84.0, "utilizationRate": 0.2026}, {"age": 2.75, "revenuePerFleetDay": 8298.3, "fleetVehicleDays": 1183.0, "reservationCount": 43.0, "utilizationRate": 0.0989}, {"age": 3.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 1170.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 3.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 234.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "싼타페", "vehicleClass": "SUV", "sortOrder": 10, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 1.0, "revenuePerFleetDay": 4972.9, "fleetVehicleDays": 1180.0, "reservationCount": 51.0, "utilizationRate": 0.0933}, {"age": 1.25, "revenuePerFleetDay": 10980.0, "fleetVehicleDays": 1840.0, "reservationCount": 160.0, "utilizationRate": 0.208}, {"age": 1.5, "revenuePerFleetDay": 20283.6, "fleetVehicleDays": 1840.0, "reservationCount": 194.0, "utilizationRate": 0.2941}, {"age": 1.75, "revenuePerFleetDay": 22948.7, "fleetVehicleDays": 1820.0, "reservationCount": 255.0, "utilizationRate": 0.3617}, {"age": 2.0, "revenuePerFleetDay": 20249.8, "fleetVehicleDays": 1800.0, "reservationCount": 221.0, "utilizationRate": 0.3216}, {"age": 2.25, "revenuePerFleetDay": 9825.9, "fleetVehicleDays": 1840.0, "reservationCount": 130.0, "utilizationRate": 0.1841}, {"age": 2.5, "revenuePerFleetDay": 9836.1, "fleetVehicleDays": 1440.0, "reservationCount": 73.0, "utilizationRate": 0.1348}, {"age": 6.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 118.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 6.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 62.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "GV80", "vehicleClass": "SUV", "sortOrder": 11, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 0.0, "revenuePerFleetDay": 13781.8, "fleetVehicleDays": 256.0, "reservationCount": 17.0, "utilizationRate": 0.1485}, {"age": 0.25, "revenuePerFleetDay": 24162.2, "fleetVehicleDays": 610.0, "reservationCount": 69.0, "utilizationRate": 0.2481}, {"age": 0.5, "revenuePerFleetDay": 39852.5, "fleetVehicleDays": 644.0, "reservationCount": 90.0, "utilizationRate": 0.3351}, {"age": 0.75, "revenuePerFleetDay": 40135.5, "fleetVehicleDays": 637.0, "reservationCount": 96.0, "utilizationRate": 0.3379}, {"age": 1.0, "revenuePerFleetDay": 32474.6, "fleetVehicleDays": 630.0, "reservationCount": 83.0, "utilizationRate": 0.2868}, {"age": 1.25, "revenuePerFleetDay": 23905.0, "fleetVehicleDays": 644.0, "reservationCount": 79.0, "utilizationRate": 0.2546}, {"age": 1.5, "revenuePerFleetDay": 32306.4, "fleetVehicleDays": 504.0, "reservationCount": 66.0, "utilizationRate": 0.3112}, {"age": 2.0, "revenuePerFleetDay": 2383.6, "fleetVehicleDays": 236.0, "reservationCount": 4.0, "utilizationRate": 0.0286}, {"age": 2.25, "revenuePerFleetDay": 8072.7, "fleetVehicleDays": 368.0, "reservationCount": 15.0, "utilizationRate": 0.0995}, {"age": 2.5, "revenuePerFleetDay": 14361.1, "fleetVehicleDays": 368.0, "reservationCount": 25.0, "utilizationRate": 0.1399}, {"age": 2.75, "revenuePerFleetDay": 19436.2, "fleetVehicleDays": 364.0, "reservationCount": 26.0, "utilizationRate": 0.1888}, {"age": 3.0, "revenuePerFleetDay": 9629.3, "fleetVehicleDays": 360.0, "reservationCount": 18.0, "utilizationRate": 0.1129}, {"age": 3.25, "revenuePerFleetDay": 6602.5, "fleetVehicleDays": 368.0, "reservationCount": 9.0, "utilizationRate": 0.0715}, {"age": 3.5, "revenuePerFleetDay": 8058.7, "fleetVehicleDays": 288.0, "reservationCount": 7.0, "utilizationRate": 0.084}, {"age": 4.0, "revenuePerFleetDay": 5217.6, "fleetVehicleDays": 177.0, "reservationCount": 7.0, "utilizationRate": 0.0695}, {"age": 4.25, "revenuePerFleetDay": 3568.5, "fleetVehicleDays": 276.0, "reservationCount": 4.0, "utilizationRate": 0.0488}, {"age": 4.5, "revenuePerFleetDay": 12653.2, "fleetVehicleDays": 276.0, "reservationCount": 13.0, "utilizationRate": 0.1083}, {"age": 4.75, "revenuePerFleetDay": 6447.3, "fleetVehicleDays": 273.0, "reservationCount": 10.0, "utilizationRate": 0.087}, {"age": 5.0, "revenuePerFleetDay": 7785.9, "fleetVehicleDays": 270.0, "reservationCount": 9.0, "utilizationRate": 0.087}, {"age": 5.25, "revenuePerFleetDay": 5091.9, "fleetVehicleDays": 276.0, "reservationCount": 7.0, "utilizationRate": 0.0692}, {"age": 5.5, "revenuePerFleetDay": 7288.6, "fleetVehicleDays": 216.0, "reservationCount": 4.0, "utilizationRate": 0.201}]}, {"modelFamily": "레이", "vehicleClass": "URBAN", "sortOrder": 12, "defaultPurchasePriceKrw": 20000000, "points": [{"age": 0.0, "revenuePerFleetDay": 8169.0, "fleetVehicleDays": 849.0, "reservationCount": 125.0, "utilizationRate": 0.2558}, {"age": 0.25, "revenuePerFleetDay": 9665.7, "fleetVehicleDays": 2240.0, "reservationCount": 373.0, "utilizationRate": 0.3357}, {"age": 0.5, "revenuePerFleetDay": 14291.3, "fleetVehicleDays": 2200.0, "reservationCount": 345.0, "utilizationRate": 0.3754}, {"age": 0.75, "revenuePerFleetDay": 16620.2, "fleetVehicleDays": 1820.0, "reservationCount": 453.0, "utilizationRate": 0.5215}, {"age": 1.0, "revenuePerFleetDay": 10024.5, "fleetVehicleDays": 2095.0, "reservationCount": 303.0, "utilizationRate": 0.3262}, {"age": 1.25, "revenuePerFleetDay": 7204.1, "fleetVehicleDays": 2300.0, "reservationCount": 272.0, "utilizationRate": 0.2703}, {"age": 1.5, "revenuePerFleetDay": 7465.7, "fleetVehicleDays": 1900.0, "reservationCount": 165.0, "utilizationRate": 0.2169}, {"age": 1.75, "revenuePerFleetDay": 5136.1, "fleetVehicleDays": 455.0, "reservationCount": 43.0, "utilizationRate": 0.186}, {"age": 2.0, "revenuePerFleetDay": 6565.8, "fleetVehicleDays": 450.0, "reservationCount": 44.0, "utilizationRate": 0.2164}, {"age": 2.25, "revenuePerFleetDay": 1896.4, "fleetVehicleDays": 460.0, "reservationCount": 16.0, "utilizationRate": 0.0968}, {"age": 2.5, "revenuePerFleetDay": 2687.5, "fleetVehicleDays": 360.0, "reservationCount": 6.0, "utilizationRate": 0.0562}, {"age": 7.0, "revenuePerFleetDay": 138.2, "fleetVehicleDays": 1298.0, "reservationCount": 4.0, "utilizationRate": 0.0087}, {"age": 7.25, "revenuePerFleetDay": 34.9, "fleetVehicleDays": 858.0, "reservationCount": 1.0, "utilizationRate": 0.0003}]}, {"modelFamily": "미니", "vehicleClass": "IMPORTED", "sortOrder": 13, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 0.25, "revenuePerFleetDay": 14830.0, "fleetVehicleDays": 647.0, "reservationCount": 62.0, "utilizationRate": 0.2238}, {"age": 0.5, "revenuePerFleetDay": 29067.6, "fleetVehicleDays": 1012.0, "reservationCount": 129.0, "utilizationRate": 0.3027}, {"age": 0.75, "revenuePerFleetDay": 25471.1, "fleetVehicleDays": 1001.0, "reservationCount": 139.0, "utilizationRate": 0.2864}, {"age": 1.0, "revenuePerFleetDay": 11849.4, "fleetVehicleDays": 1226.0, "reservationCount": 92.0, "utilizationRate": 0.1559}, {"age": 1.25, "revenuePerFleetDay": 9987.3, "fleetVehicleDays": 1380.0, "reservationCount": 93.0, "utilizationRate": 0.1409}, {"age": 1.5, "revenuePerFleetDay": 13443.8, "fleetVehicleDays": 1160.0, "reservationCount": 78.0, "utilizationRate": 0.1506}, {"age": 1.75, "revenuePerFleetDay": 18393.9, "fleetVehicleDays": 364.0, "reservationCount": 41.0, "utilizationRate": 0.2147}, {"age": 2.0, "revenuePerFleetDay": 7067.9, "fleetVehicleDays": 360.0, "reservationCount": 17.0, "utilizationRate": 0.0903}, {"age": 2.25, "revenuePerFleetDay": 8900.4, "fleetVehicleDays": 368.0, "reservationCount": 27.0, "utilizationRate": 0.125}, {"age": 2.5, "revenuePerFleetDay": 5699.0, "fleetVehicleDays": 288.0, "reservationCount": 9.0, "utilizationRate": 0.0653}, {"age": 3.0, "revenuePerFleetDay": 1153.0, "fleetVehicleDays": 354.0, "reservationCount": 3.0, "utilizationRate": 0.022}, {"age": 3.25, "revenuePerFleetDay": 7212.8, "fleetVehicleDays": 552.0, "reservationCount": 33.0, "utilizationRate": 0.1311}, {"age": 3.5, "revenuePerFleetDay": 11838.3, "fleetVehicleDays": 552.0, "reservationCount": 41.0, "utilizationRate": 0.1634}, {"age": 3.75, "revenuePerFleetDay": 11082.7, "fleetVehicleDays": 546.0, "reservationCount": 48.0, "utilizationRate": 0.1823}, {"age": 4.0, "revenuePerFleetDay": 4037.8, "fleetVehicleDays": 540.0, "reservationCount": 15.0, "utilizationRate": 0.0684}, {"age": 4.25, "revenuePerFleetDay": 6812.4, "fleetVehicleDays": 552.0, "reservationCount": 25.0, "utilizationRate": 0.0929}, {"age": 4.5, "revenuePerFleetDay": 6871.7, "fleetVehicleDays": 432.0, "reservationCount": 18.0, "utilizationRate": 0.0891}]}, {"modelFamily": "K3", "vehicleClass": "COMPACT", "sortOrder": 14, "defaultPurchasePriceKrw": 25000000, "points": [{"age": 1.0, "revenuePerFleetDay": 4413.2, "fleetVehicleDays": 590.0, "reservationCount": 57.0, "utilizationRate": 0.1718}, {"age": 1.25, "revenuePerFleetDay": 6649.2, "fleetVehicleDays": 920.0, "reservationCount": 82.0, "utilizationRate": 0.2041}, {"age": 1.5, "revenuePerFleetDay": 8513.0, "fleetVehicleDays": 920.0, "reservationCount": 88.0, "utilizationRate": 0.211}, {"age": 1.75, "revenuePerFleetDay": 11194.9, "fleetVehicleDays": 910.0, "reservationCount": 110.0, "utilizationRate": 0.2763}, {"age": 2.0, "revenuePerFleetDay": 14480.2, "fleetVehicleDays": 900.0, "reservationCount": 152.0, "utilizationRate": 0.3477}, {"age": 2.25, "revenuePerFleetDay": 7144.7, "fleetVehicleDays": 846.0, "reservationCount": 79.0, "utilizationRate": 0.2005}, {"age": 2.5, "revenuePerFleetDay": 13919.7, "fleetVehicleDays": 648.0, "reservationCount": 89.0, "utilizationRate": 0.3299}, {"age": 3.0, "revenuePerFleetDay": 995.0, "fleetVehicleDays": 1475.0, "reservationCount": 29.0, "utilizationRate": 0.0452}, {"age": 3.25, "revenuePerFleetDay": 1596.7, "fleetVehicleDays": 2300.0, "reservationCount": 58.0, "utilizationRate": 0.0613}, {"age": 3.5, "revenuePerFleetDay": 4863.7, "fleetVehicleDays": 2064.0, "reservationCount": 95.0, "utilizationRate": 0.1384}, {"age": 3.75, "revenuePerFleetDay": 6012.3, "fleetVehicleDays": 1911.0, "reservationCount": 154.0, "utilizationRate": 0.1924}, {"age": 4.0, "revenuePerFleetDay": 7781.8, "fleetVehicleDays": 2480.0, "reservationCount": 234.0, "utilizationRate": 0.2298}, {"age": 4.25, "revenuePerFleetDay": 4233.9, "fleetVehicleDays": 2852.0, "reservationCount": 217.0, "utilizationRate": 0.1806}, {"age": 4.5, "revenuePerFleetDay": 4377.4, "fleetVehicleDays": 2432.0, "reservationCount": 97.0, "utilizationRate": 0.1064}, {"age": 4.75, "revenuePerFleetDay": 2819.8, "fleetVehicleDays": 910.0, "reservationCount": 33.0, "utilizationRate": 0.0848}, {"age": 5.0, "revenuePerFleetDay": 2335.9, "fleetVehicleDays": 1490.0, "reservationCount": 45.0, "utilizationRate": 0.0741}, {"age": 5.25, "revenuePerFleetDay": 1441.0, "fleetVehicleDays": 1840.0, "reservationCount": 49.0, "utilizationRate": 0.0703}, {"age": 5.5, "revenuePerFleetDay": 1083.5, "fleetVehicleDays": 1640.0, "reservationCount": 28.0, "utilizationRate": 0.0395}, {"age": 5.75, "revenuePerFleetDay": 1450.3, "fleetVehicleDays": 910.0, "reservationCount": 23.0, "utilizationRate": 0.0591}, {"age": 6.0, "revenuePerFleetDay": 1579.2, "fleetVehicleDays": 1608.0, "reservationCount": 30.0, "utilizationRate": 0.054}, {"age": 6.25, "revenuePerFleetDay": 532.1, "fleetVehicleDays": 1918.0, "reservationCount": 16.0, "utilizationRate": 0.0201}, {"age": 6.5, "revenuePerFleetDay": 1816.1, "fleetVehicleDays": 1640.0, "reservationCount": 29.0, "utilizationRate": 0.0472}, {"age": 6.75, "revenuePerFleetDay": 2584.4, "fleetVehicleDays": 910.0, "reservationCount": 33.0, "utilizationRate": 0.0959}, {"age": 7.0, "revenuePerFleetDay": 1404.9, "fleetVehicleDays": 1018.0, "reservationCount": 16.0, "utilizationRate": 0.0453}, {"age": 7.25, "revenuePerFleetDay": 127.3, "fleetVehicleDays": 908.0, "reservationCount": 1.0, "utilizationRate": 0.0051}, {"age": 7.5, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 648.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "BMW 420i", "vehicleClass": "IMPORTED", "sortOrder": 15, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 0.0, "revenuePerFleetDay": 37056.8, "fleetVehicleDays": 548.0, "reservationCount": 89.0, "utilizationRate": 0.2807}, {"age": 0.25, "revenuePerFleetDay": 40205.6, "fleetVehicleDays": 552.0, "reservationCount": 94.0, "utilizationRate": 0.3244}, {"age": 0.5, "revenuePerFleetDay": 32718.5, "fleetVehicleDays": 432.0, "reservationCount": 49.0, "utilizationRate": 0.2224}, {"age": 1.0, "revenuePerFleetDay": 7787.7, "fleetVehicleDays": 295.0, "reservationCount": 15.0, "utilizationRate": 0.1095}, {"age": 1.25, "revenuePerFleetDay": 22583.6, "fleetVehicleDays": 460.0, "reservationCount": 54.0, "utilizationRate": 0.2336}, {"age": 1.5, "revenuePerFleetDay": 46422.2, "fleetVehicleDays": 460.0, "reservationCount": 71.0, "utilizationRate": 0.3502}, {"age": 1.75, "revenuePerFleetDay": 30793.9, "fleetVehicleDays": 455.0, "reservationCount": 54.0, "utilizationRate": 0.2559}, {"age": 2.0, "revenuePerFleetDay": 7032.3, "fleetVehicleDays": 450.0, "reservationCount": 17.0, "utilizationRate": 0.0625}, {"age": 2.25, "revenuePerFleetDay": 20702.5, "fleetVehicleDays": 460.0, "reservationCount": 42.0, "utilizationRate": 0.1861}, {"age": 2.5, "revenuePerFleetDay": 20147.9, "fleetVehicleDays": 360.0, "reservationCount": 24.0, "utilizationRate": 0.166}, {"age": 3.0, "revenuePerFleetDay": 3832.8, "fleetVehicleDays": 236.0, "reservationCount": 6.0, "utilizationRate": 0.0536}, {"age": 3.25, "revenuePerFleetDay": 9647.1, "fleetVehicleDays": 368.0, "reservationCount": 19.0, "utilizationRate": 0.1184}, {"age": 3.5, "revenuePerFleetDay": 15408.5, "fleetVehicleDays": 368.0, "reservationCount": 25.0, "utilizationRate": 0.1386}, {"age": 3.75, "revenuePerFleetDay": 12464.6, "fleetVehicleDays": 364.0, "reservationCount": 17.0, "utilizationRate": 0.1232}, {"age": 4.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 360.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 4.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 72.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "G80", "vehicleClass": "LUXURY", "sortOrder": 16, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 0.0, "revenuePerFleetDay": 15714.8, "fleetVehicleDays": 240.0, "reservationCount": 24.0, "utilizationRate": 0.1843}, {"age": 0.25, "revenuePerFleetDay": 23210.8, "fleetVehicleDays": 460.0, "reservationCount": 63.0, "utilizationRate": 0.2984}, {"age": 0.5, "revenuePerFleetDay": 41659.5, "fleetVehicleDays": 460.0, "reservationCount": 78.0, "utilizationRate": 0.4161}, {"age": 0.75, "revenuePerFleetDay": 42468.3, "fleetVehicleDays": 455.0, "reservationCount": 99.0, "utilizationRate": 0.4844}, {"age": 1.0, "revenuePerFleetDay": 31402.5, "fleetVehicleDays": 627.0, "reservationCount": 91.0, "utilizationRate": 0.3449}, {"age": 1.25, "revenuePerFleetDay": 14988.6, "fleetVehicleDays": 736.0, "reservationCount": 67.0, "utilizationRate": 0.1842}, {"age": 1.5, "revenuePerFleetDay": 23509.5, "fleetVehicleDays": 636.0, "reservationCount": 68.0, "utilizationRate": 0.247}, {"age": 1.75, "revenuePerFleetDay": 21565.2, "fleetVehicleDays": 273.0, "reservationCount": 32.0, "utilizationRate": 0.2572}, {"age": 2.0, "revenuePerFleetDay": 18334.3, "fleetVehicleDays": 270.0, "reservationCount": 29.0, "utilizationRate": 0.2079}, {"age": 2.25, "revenuePerFleetDay": 8216.9, "fleetVehicleDays": 276.0, "reservationCount": 13.0, "utilizationRate": 0.1088}, {"age": 2.5, "revenuePerFleetDay": 6750.4, "fleetVehicleDays": 216.0, "reservationCount": 9.0, "utilizationRate": 0.0987}, {"age": 4.0, "revenuePerFleetDay": 550.8, "fleetVehicleDays": 177.0, "reservationCount": 1.0, "utilizationRate": 0.0114}, {"age": 4.25, "revenuePerFleetDay": 7970.2, "fleetVehicleDays": 276.0, "reservationCount": 17.0, "utilizationRate": 0.1457}, {"age": 4.5, "revenuePerFleetDay": 13146.5, "fleetVehicleDays": 276.0, "reservationCount": 24.0, "utilizationRate": 0.1664}, {"age": 4.75, "revenuePerFleetDay": 8616.1, "fleetVehicleDays": 273.0, "reservationCount": 18.0, "utilizationRate": 0.1287}, {"age": 5.0, "revenuePerFleetDay": 9903.9, "fleetVehicleDays": 270.0, "reservationCount": 18.0, "utilizationRate": 0.1283}, {"age": 5.25, "revenuePerFleetDay": 6172.9, "fleetVehicleDays": 276.0, "reservationCount": 15.0, "utilizationRate": 0.1219}, {"age": 5.5, "revenuePerFleetDay": 12718.0, "fleetVehicleDays": 216.0, "reservationCount": 11.0, "utilizationRate": 0.1849}, {"age": 6.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 118.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 6.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 62.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "EV6", "vehicleClass": "EV", "sortOrder": 17, "defaultPurchasePriceKrw": 45000000, "points": [{"age": 3.0, "revenuePerFleetDay": 2192.2, "fleetVehicleDays": 1239.0, "reservationCount": 32.0, "utilizationRate": 0.0598}, {"age": 3.25, "revenuePerFleetDay": 5848.8, "fleetVehicleDays": 1932.0, "reservationCount": 133.0, "utilizationRate": 0.161}, {"age": 3.5, "revenuePerFleetDay": 12352.1, "fleetVehicleDays": 1932.0, "reservationCount": 157.0, "utilizationRate": 0.2282}, {"age": 3.75, "revenuePerFleetDay": 11966.4, "fleetVehicleDays": 1911.0, "reservationCount": 185.0, "utilizationRate": 0.2475}, {"age": 4.0, "revenuePerFleetDay": 12866.0, "fleetVehicleDays": 1890.0, "reservationCount": 197.0, "utilizationRate": 0.2599}, {"age": 4.25, "revenuePerFleetDay": 7827.9, "fleetVehicleDays": 1932.0, "reservationCount": 135.0, "utilizationRate": 0.1913}, {"age": 4.5, "revenuePerFleetDay": 12143.4, "fleetVehicleDays": 1512.0, "reservationCount": 100.0, "utilizationRate": 0.2049}]}, {"modelFamily": "벤츠", "vehicleClass": "IMPORTED", "sortOrder": 18, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 1.0, "revenuePerFleetDay": 4098.6, "fleetVehicleDays": 295.0, "reservationCount": 9.0, "utilizationRate": 0.0588}, {"age": 1.25, "revenuePerFleetDay": 16063.3, "fleetVehicleDays": 407.0, "reservationCount": 28.0, "utilizationRate": 0.1471}, {"age": 1.5, "revenuePerFleetDay": 42022.2, "fleetVehicleDays": 368.0, "reservationCount": 47.0, "utilizationRate": 0.2832}, {"age": 1.75, "revenuePerFleetDay": 39985.3, "fleetVehicleDays": 364.0, "reservationCount": 55.0, "utilizationRate": 0.2803}, {"age": 2.0, "revenuePerFleetDay": 21892.8, "fleetVehicleDays": 360.0, "reservationCount": 34.0, "utilizationRate": 0.1665}, {"age": 2.25, "revenuePerFleetDay": 39826.0, "fleetVehicleDays": 368.0, "reservationCount": 63.0, "utilizationRate": 0.3199}, {"age": 2.5, "revenuePerFleetDay": 40910.2, "fleetVehicleDays": 288.0, "reservationCount": 35.0, "utilizationRate": 0.2765}, {"age": 4.0, "revenuePerFleetDay": 550.7, "fleetVehicleDays": 118.0, "reservationCount": 1.0, "utilizationRate": 0.0085}, {"age": 4.25, "revenuePerFleetDay": 24366.3, "fleetVehicleDays": 184.0, "reservationCount": 25.0, "utilizationRate": 0.2883}, {"age": 4.5, "revenuePerFleetDay": 30250.7, "fleetVehicleDays": 184.0, "reservationCount": 26.0, "utilizationRate": 0.2885}, {"age": 4.75, "revenuePerFleetDay": 32525.4, "fleetVehicleDays": 182.0, "reservationCount": 26.0, "utilizationRate": 0.3113}, {"age": 5.0, "revenuePerFleetDay": 8625.5, "fleetVehicleDays": 416.0, "reservationCount": 16.0, "utilizationRate": 0.0951}, {"age": 5.25, "revenuePerFleetDay": 10047.9, "fleetVehicleDays": 552.0, "reservationCount": 32.0, "utilizationRate": 0.1188}, {"age": 5.5, "revenuePerFleetDay": 17440.7, "fleetVehicleDays": 512.0, "reservationCount": 42.0, "utilizationRate": 0.1688}, {"age": 5.75, "revenuePerFleetDay": 14126.7, "fleetVehicleDays": 364.0, "reservationCount": 29.0, "utilizationRate": 0.1706}, {"age": 6.0, "revenuePerFleetDay": 981.0, "fleetVehicleDays": 537.0, "reservationCount": 5.0, "utilizationRate": 0.0141}, {"age": 6.25, "revenuePerFleetDay": 5781.6, "fleetVehicleDays": 485.0, "reservationCount": 14.0, "utilizationRate": 0.0689}, {"age": 6.5, "revenuePerFleetDay": 7847.8, "fleetVehicleDays": 288.0, "reservationCount": 14.0, "utilizationRate": 0.0923}]}, {"modelFamily": "GV70", "vehicleClass": "SUV", "sortOrder": 19, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 0.0, "revenuePerFleetDay": 14404.1, "fleetVehicleDays": 38.0, "reservationCount": 4.0, "utilizationRate": 0.2009}, {"age": 0.25, "revenuePerFleetDay": 25595.0, "fleetVehicleDays": 409.0, "reservationCount": 57.0, "utilizationRate": 0.3233}, {"age": 0.5, "revenuePerFleetDay": 32002.9, "fleetVehicleDays": 460.0, "reservationCount": 63.0, "utilizationRate": 0.3292}, {"age": 0.75, "revenuePerFleetDay": 29714.9, "fleetVehicleDays": 455.0, "reservationCount": 62.0, "utilizationRate": 0.282}, {"age": 1.0, "revenuePerFleetDay": 33874.5, "fleetVehicleDays": 450.0, "reservationCount": 62.0, "utilizationRate": 0.3309}, {"age": 1.25, "revenuePerFleetDay": 13680.7, "fleetVehicleDays": 460.0, "reservationCount": 39.0, "utilizationRate": 0.1902}, {"age": 1.5, "revenuePerFleetDay": 20143.1, "fleetVehicleDays": 360.0, "reservationCount": 31.0, "utilizationRate": 0.2372}, {"age": 2.0, "revenuePerFleetDay": 4590.9, "fleetVehicleDays": 295.0, "reservationCount": 9.0, "utilizationRate": 0.0641}, {"age": 2.25, "revenuePerFleetDay": 7513.7, "fleetVehicleDays": 460.0, "reservationCount": 21.0, "utilizationRate": 0.1166}, {"age": 2.5, "revenuePerFleetDay": 15705.3, "fleetVehicleDays": 460.0, "reservationCount": 38.0, "utilizationRate": 0.1914}, {"age": 2.75, "revenuePerFleetDay": 14183.3, "fleetVehicleDays": 455.0, "reservationCount": 39.0, "utilizationRate": 0.2007}, {"age": 3.0, "revenuePerFleetDay": 7126.9, "fleetVehicleDays": 450.0, "reservationCount": 20.0, "utilizationRate": 0.0953}, {"age": 3.25, "revenuePerFleetDay": 6567.5, "fleetVehicleDays": 460.0, "reservationCount": 17.0, "utilizationRate": 0.0962}, {"age": 3.5, "revenuePerFleetDay": 6454.4, "fleetVehicleDays": 360.0, "reservationCount": 13.0, "utilizationRate": 0.1112}, {"age": 4.0, "revenuePerFleetDay": 2485.5, "fleetVehicleDays": 236.0, "reservationCount": 4.0, "utilizationRate": 0.0363}, {"age": 4.25, "revenuePerFleetDay": 5857.1, "fleetVehicleDays": 368.0, "reservationCount": 14.0, "utilizationRate": 0.096}, {"age": 4.5, "revenuePerFleetDay": 9825.4, "fleetVehicleDays": 368.0, "reservationCount": 16.0, "utilizationRate": 0.1069}, {"age": 4.75, "revenuePerFleetDay": 15135.9, "fleetVehicleDays": 364.0, "reservationCount": 27.0, "utilizationRate": 0.2074}, {"age": 5.0, "revenuePerFleetDay": 9499.1, "fleetVehicleDays": 360.0, "reservationCount": 14.0, "utilizationRate": 0.0938}, {"age": 5.25, "revenuePerFleetDay": 2537.6, "fleetVehicleDays": 368.0, "reservationCount": 8.0, "utilizationRate": 0.0532}, {"age": 5.5, "revenuePerFleetDay": 4786.3, "fleetVehicleDays": 288.0, "reservationCount": 10.0, "utilizationRate": 0.0755}]}, {"modelFamily": "쏠라티", "vehicleClass": "RV", "sortOrder": 20, "defaultPurchasePriceKrw": 45000000, "points": [{"age": 0.0, "revenuePerFleetDay": 12744.0, "fleetVehicleDays": 291.0, "reservationCount": 8.0, "utilizationRate": 0.0527}, {"age": 0.25, "revenuePerFleetDay": 25336.9, "fleetVehicleDays": 460.0, "reservationCount": 25.0, "utilizationRate": 0.1274}, {"age": 0.5, "revenuePerFleetDay": 25383.2, "fleetVehicleDays": 429.0, "reservationCount": 17.0, "utilizationRate": 0.095}, {"age": 0.75, "revenuePerFleetDay": 29276.6, "fleetVehicleDays": 364.0, "reservationCount": 18.0, "utilizationRate": 0.123}, {"age": 1.0, "revenuePerFleetDay": 22298.9, "fleetVehicleDays": 419.0, "reservationCount": 21.0, "utilizationRate": 0.1023}, {"age": 1.25, "revenuePerFleetDay": 23635.1, "fleetVehicleDays": 460.0, "reservationCount": 21.0, "utilizationRate": 0.0924}, {"age": 1.5, "revenuePerFleetDay": 19038.5, "fleetVehicleDays": 380.0, "reservationCount": 13.0, "utilizationRate": 0.0856}, {"age": 1.75, "revenuePerFleetDay": 10202.5, "fleetVehicleDays": 91.0, "reservationCount": 2.0, "utilizationRate": 0.0382}, {"age": 2.0, "revenuePerFleetDay": 11061.7, "fleetVehicleDays": 326.0, "reservationCount": 7.0, "utilizationRate": 0.0499}, {"age": 2.25, "revenuePerFleetDay": 14852.2, "fleetVehicleDays": 460.0, "reservationCount": 15.0, "utilizationRate": 0.0696}, {"age": 2.5, "revenuePerFleetDay": 10003.8, "fleetVehicleDays": 429.0, "reservationCount": 9.0, "utilizationRate": 0.0507}, {"age": 2.75, "revenuePerFleetDay": 10632.7, "fleetVehicleDays": 364.0, "reservationCount": 6.0, "utilizationRate": 0.0369}, {"age": 3.0, "revenuePerFleetDay": 7621.6, "fleetVehicleDays": 360.0, "reservationCount": 5.0, "utilizationRate": 0.0374}, {"age": 3.25, "revenuePerFleetDay": 9100.5, "fleetVehicleDays": 368.0, "reservationCount": 4.0, "utilizationRate": 0.0262}, {"age": 3.5, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 288.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 6.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 177.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 6.25, "revenuePerFleetDay": 9833.4, "fleetVehicleDays": 276.0, "reservationCount": 8.0, "utilizationRate": 0.0684}, {"age": 6.5, "revenuePerFleetDay": 3325.0, "fleetVehicleDays": 276.0, "reservationCount": 1.0, "utilizationRate": 0.0169}, {"age": 6.75, "revenuePerFleetDay": 5682.9, "fleetVehicleDays": 273.0, "reservationCount": 4.0, "utilizationRate": 0.0286}, {"age": 7.0, "revenuePerFleetDay": 5624.6, "fleetVehicleDays": 270.0, "reservationCount": 4.0, "utilizationRate": 0.0299}, {"age": 7.25, "revenuePerFleetDay": 4396.8, "fleetVehicleDays": 276.0, "reservationCount": 2.0, "utilizationRate": 0.0195}, {"age": 7.5, "revenuePerFleetDay": 3483.8, "fleetVehicleDays": 216.0, "reservationCount": 1.0, "utilizationRate": 0.0143}]}, {"modelFamily": "더 뉴 셀토스", "vehicleClass": "SUV", "sortOrder": 21, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 1.0, "revenuePerFleetDay": 4102.1, "fleetVehicleDays": 649.0, "reservationCount": 34.0, "utilizationRate": 0.1161}, {"age": 1.25, "revenuePerFleetDay": 10749.2, "fleetVehicleDays": 1012.0, "reservationCount": 126.0, "utilizationRate": 0.2903}, {"age": 1.5, "revenuePerFleetDay": 14137.9, "fleetVehicleDays": 1012.0, "reservationCount": 126.0, "utilizationRate": 0.3027}, {"age": 1.75, "revenuePerFleetDay": 19251.4, "fleetVehicleDays": 1001.0, "reservationCount": 164.0, "utilizationRate": 0.4181}, {"age": 2.0, "revenuePerFleetDay": 14462.6, "fleetVehicleDays": 990.0, "reservationCount": 127.0, "utilizationRate": 0.3175}, {"age": 2.25, "revenuePerFleetDay": 7620.2, "fleetVehicleDays": 1012.0, "reservationCount": 94.0, "utilizationRate": 0.2247}, {"age": 2.5, "revenuePerFleetDay": 7884.3, "fleetVehicleDays": 792.0, "reservationCount": 43.0, "utilizationRate": 0.1394}]}, {"modelFamily": "코나", "vehicleClass": "EV", "sortOrder": 22, "defaultPurchasePriceKrw": 45000000, "points": [{"age": 5.0, "revenuePerFleetDay": 955.2, "fleetVehicleDays": 2065.0, "reservationCount": 29.0, "utilizationRate": 0.032}, {"age": 5.25, "revenuePerFleetDay": 1758.4, "fleetVehicleDays": 3220.0, "reservationCount": 86.0, "utilizationRate": 0.0608}, {"age": 5.5, "revenuePerFleetDay": 4979.7, "fleetVehicleDays": 3220.0, "reservationCount": 139.0, "utilizationRate": 0.1204}, {"age": 5.75, "revenuePerFleetDay": 4107.8, "fleetVehicleDays": 3185.0, "reservationCount": 161.0, "utilizationRate": 0.1307}, {"age": 6.0, "revenuePerFleetDay": 3929.2, "fleetVehicleDays": 3150.0, "reservationCount": 141.0, "utilizationRate": 0.1123}, {"age": 6.25, "revenuePerFleetDay": 3531.2, "fleetVehicleDays": 3220.0, "reservationCount": 130.0, "utilizationRate": 0.1117}, {"age": 6.5, "revenuePerFleetDay": 3893.0, "fleetVehicleDays": 2520.0, "reservationCount": 68.0, "utilizationRate": 0.0717}]}, {"modelFamily": "EV3", "vehicleClass": "EV", "sortOrder": 23, "defaultPurchasePriceKrw": 45000000, "points": [{"age": 0.0, "revenuePerFleetDay": 4038.2, "fleetVehicleDays": 205.0, "reservationCount": 13.0, "utilizationRate": 0.0853}, {"age": 0.25, "revenuePerFleetDay": 6377.2, "fleetVehicleDays": 662.0, "reservationCount": 46.0, "utilizationRate": 0.1387}, {"age": 0.5, "revenuePerFleetDay": 17157.6, "fleetVehicleDays": 828.0, "reservationCount": 82.0, "utilizationRate": 0.2262}, {"age": 0.75, "revenuePerFleetDay": 20222.7, "fleetVehicleDays": 941.0, "reservationCount": 145.0, "utilizationRate": 0.3426}, {"age": 1.0, "revenuePerFleetDay": 12284.3, "fleetVehicleDays": 990.0, "reservationCount": 91.0, "utilizationRate": 0.2084}, {"age": 1.25, "revenuePerFleetDay": 10280.2, "fleetVehicleDays": 1012.0, "reservationCount": 77.0, "utilizationRate": 0.1896}, {"age": 1.5, "revenuePerFleetDay": 11833.5, "fleetVehicleDays": 792.0, "reservationCount": 52.0, "utilizationRate": 0.1651}]}, {"modelFamily": "포르쉐", "vehicleClass": "SUPERCAR", "sortOrder": 24, "defaultPurchasePriceKrw": 150000000, "points": [{"age": 0.25, "revenuePerFleetDay": 220357.2, "fleetVehicleDays": 20.0, "reservationCount": 3.0, "utilizationRate": 0.4365}, {"age": 0.5, "revenuePerFleetDay": 4940.0, "fleetVehicleDays": 92.0, "reservationCount": 1.0, "utilizationRate": 0.0106}, {"age": 0.75, "revenuePerFleetDay": 30549.2, "fleetVehicleDays": 91.0, "reservationCount": 3.0, "utilizationRate": 0.065}, {"age": 1.0, "revenuePerFleetDay": 35491.0, "fleetVehicleDays": 90.0, "reservationCount": 5.0, "utilizationRate": 0.084}, {"age": 1.25, "revenuePerFleetDay": 59203.8, "fleetVehicleDays": 92.0, "reservationCount": 6.0, "utilizationRate": 0.1866}, {"age": 1.5, "revenuePerFleetDay": 75902.7, "fleetVehicleDays": 61.0, "reservationCount": 7.0, "utilizationRate": 0.2309}, {"age": 3.0, "revenuePerFleetDay": 3038.4, "fleetVehicleDays": 118.0, "reservationCount": 1.0, "utilizationRate": 0.0095}, {"age": 3.25, "revenuePerFleetDay": 63585.8, "fleetVehicleDays": 131.0, "reservationCount": 10.0, "utilizationRate": 0.1381}, {"age": 3.5, "revenuePerFleetDay": 38286.9, "fleetVehicleDays": 92.0, "reservationCount": 3.0, "utilizationRate": 0.0802}, {"age": 3.75, "revenuePerFleetDay": 75592.9, "fleetVehicleDays": 91.0, "reservationCount": 11.0, "utilizationRate": 0.1842}, {"age": 4.0, "revenuePerFleetDay": 32595.2, "fleetVehicleDays": 90.0, "reservationCount": 7.0, "utilizationRate": 0.0887}, {"age": 4.25, "revenuePerFleetDay": 81279.4, "fleetVehicleDays": 92.0, "reservationCount": 14.0, "utilizationRate": 0.2374}, {"age": 4.5, "revenuePerFleetDay": 64242.6, "fleetVehicleDays": 61.0, "reservationCount": 7.0, "utilizationRate": 0.1841}]}, {"modelFamily": "더뉴그랜저 하이브리드", "vehicleClass": "LUXURY", "sortOrder": 25, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 1.0, "revenuePerFleetDay": 7451.2, "fleetVehicleDays": 295.0, "reservationCount": 18.0, "utilizationRate": 0.1323}, {"age": 1.25, "revenuePerFleetDay": 10225.2, "fleetVehicleDays": 460.0, "reservationCount": 36.0, "utilizationRate": 0.1692}, {"age": 1.5, "revenuePerFleetDay": 23921.2, "fleetVehicleDays": 460.0, "reservationCount": 52.0, "utilizationRate": 0.2981}, {"age": 1.75, "revenuePerFleetDay": 25906.2, "fleetVehicleDays": 455.0, "reservationCount": 69.0, "utilizationRate": 0.3501}, {"age": 2.0, "revenuePerFleetDay": 22906.9, "fleetVehicleDays": 450.0, "reservationCount": 62.0, "utilizationRate": 0.2634}, {"age": 2.25, "revenuePerFleetDay": 10893.8, "fleetVehicleDays": 460.0, "reservationCount": 31.0, "utilizationRate": 0.1656}, {"age": 2.5, "revenuePerFleetDay": 11537.3, "fleetVehicleDays": 360.0, "reservationCount": 19.0, "utilizationRate": 0.1495}]}, {"modelFamily": "아이오닉", "vehicleClass": "EV", "sortOrder": 26, "defaultPurchasePriceKrw": 45000000, "points": [{"age": 4.0, "revenuePerFleetDay": 1823.5, "fleetVehicleDays": 590.0, "reservationCount": 15.0, "utilizationRate": 0.0592}, {"age": 4.25, "revenuePerFleetDay": 5553.9, "fleetVehicleDays": 920.0, "reservationCount": 59.0, "utilizationRate": 0.1516}, {"age": 4.5, "revenuePerFleetDay": 12014.6, "fleetVehicleDays": 920.0, "reservationCount": 70.0, "utilizationRate": 0.2295}, {"age": 4.75, "revenuePerFleetDay": 9603.7, "fleetVehicleDays": 910.0, "reservationCount": 75.0, "utilizationRate": 0.2172}, {"age": 5.0, "revenuePerFleetDay": 7984.5, "fleetVehicleDays": 900.0, "reservationCount": 68.0, "utilizationRate": 0.181}, {"age": 5.25, "revenuePerFleetDay": 6569.2, "fleetVehicleDays": 920.0, "reservationCount": 51.0, "utilizationRate": 0.1588}, {"age": 5.5, "revenuePerFleetDay": 7608.4, "fleetVehicleDays": 720.0, "reservationCount": 32.0, "utilizationRate": 0.124}]}, {"modelFamily": "캐스퍼", "vehicleClass": "URBAN", "sortOrder": 27, "defaultPurchasePriceKrw": 20000000, "points": [{"age": 3.0, "revenuePerFleetDay": 1083.5, "fleetVehicleDays": 590.0, "reservationCount": 14.0, "utilizationRate": 0.0495}, {"age": 3.25, "revenuePerFleetDay": 5190.4, "fleetVehicleDays": 920.0, "reservationCount": 67.0, "utilizationRate": 0.1793}, {"age": 3.5, "revenuePerFleetDay": 9768.1, "fleetVehicleDays": 920.0, "reservationCount": 98.0, "utilizationRate": 0.2551}, {"age": 3.75, "revenuePerFleetDay": 10409.7, "fleetVehicleDays": 910.0, "reservationCount": 148.0, "utilizationRate": 0.3324}, {"age": 4.0, "revenuePerFleetDay": 8037.9, "fleetVehicleDays": 900.0, "reservationCount": 106.0, "utilizationRate": 0.2778}, {"age": 4.25, "revenuePerFleetDay": 4520.2, "fleetVehicleDays": 920.0, "reservationCount": 78.0, "utilizationRate": 0.188}, {"age": 4.5, "revenuePerFleetDay": 10480.4, "fleetVehicleDays": 720.0, "reservationCount": 71.0, "utilizationRate": 0.267}]}, {"modelFamily": "랭글러", "vehicleClass": "IMPORTED", "sortOrder": 28, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 2.0, "revenuePerFleetDay": 6974.7, "fleetVehicleDays": 236.0, "reservationCount": 11.0, "utilizationRate": 0.0845}, {"age": 2.25, "revenuePerFleetDay": 16701.8, "fleetVehicleDays": 368.0, "reservationCount": 31.0, "utilizationRate": 0.1729}, {"age": 2.5, "revenuePerFleetDay": 26895.6, "fleetVehicleDays": 368.0, "reservationCount": 44.0, "utilizationRate": 0.255}, {"age": 2.75, "revenuePerFleetDay": 17293.2, "fleetVehicleDays": 364.0, "reservationCount": 30.0, "utilizationRate": 0.1831}, {"age": 3.0, "revenuePerFleetDay": 16617.2, "fleetVehicleDays": 360.0, "reservationCount": 28.0, "utilizationRate": 0.1637}, {"age": 3.25, "revenuePerFleetDay": 19669.2, "fleetVehicleDays": 368.0, "reservationCount": 35.0, "utilizationRate": 0.2194}, {"age": 3.5, "revenuePerFleetDay": 9335.8, "fleetVehicleDays": 288.0, "reservationCount": 11.0, "utilizationRate": 0.084}]}, {"modelFamily": "벤츠", "vehicleClass": "SUPERCAR", "sortOrder": 29, "defaultPurchasePriceKrw": 150000000, "points": [{"age": 4.0, "revenuePerFleetDay": 24154.2, "fleetVehicleDays": 59.0, "reservationCount": 2.0, "utilizationRate": 0.0523}, {"age": 4.25, "revenuePerFleetDay": 50481.2, "fleetVehicleDays": 92.0, "reservationCount": 7.0, "utilizationRate": 0.0973}, {"age": 4.5, "revenuePerFleetDay": 66143.2, "fleetVehicleDays": 92.0, "reservationCount": 6.0, "utilizationRate": 0.12}, {"age": 4.75, "revenuePerFleetDay": 69670.1, "fleetVehicleDays": 91.0, "reservationCount": 8.0, "utilizationRate": 0.1331}, {"age": 5.0, "revenuePerFleetDay": 97109.0, "fleetVehicleDays": 90.0, "reservationCount": 9.0, "utilizationRate": 0.1915}, {"age": 5.25, "revenuePerFleetDay": 52599.2, "fleetVehicleDays": 92.0, "reservationCount": 6.0, "utilizationRate": 0.1079}, {"age": 5.5, "revenuePerFleetDay": 93989.6, "fleetVehicleDays": 61.0, "reservationCount": 8.0, "utilizationRate": 0.2443}]}, {"modelFamily": "코나", "vehicleClass": "SUV", "sortOrder": 30, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 1.0, "revenuePerFleetDay": 4428.9, "fleetVehicleDays": 295.0, "reservationCount": 18.0, "utilizationRate": 0.1212}, {"age": 1.25, "revenuePerFleetDay": 14180.8, "fleetVehicleDays": 460.0, "reservationCount": 70.0, "utilizationRate": 0.3456}, {"age": 1.5, "revenuePerFleetDay": 15372.3, "fleetVehicleDays": 460.0, "reservationCount": 64.0, "utilizationRate": 0.331}, {"age": 1.75, "revenuePerFleetDay": 19672.6, "fleetVehicleDays": 455.0, "reservationCount": 85.0, "utilizationRate": 0.4266}, {"age": 2.0, "revenuePerFleetDay": 14336.3, "fleetVehicleDays": 450.0, "reservationCount": 68.0, "utilizationRate": 0.347}, {"age": 2.25, "revenuePerFleetDay": 8370.2, "fleetVehicleDays": 460.0, "reservationCount": 46.0, "utilizationRate": 0.2103}, {"age": 2.5, "revenuePerFleetDay": 7313.1, "fleetVehicleDays": 360.0, "reservationCount": 23.0, "utilizationRate": 0.1825}, {"age": 7.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 767.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 7.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 507.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "디올뉴 그랜저", "vehicleClass": "LUXURY", "sortOrder": 31, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 2.0, "revenuePerFleetDay": 1860.9, "fleetVehicleDays": 295.0, "reservationCount": 6.0, "utilizationRate": 0.0357}, {"age": 2.25, "revenuePerFleetDay": 13111.4, "fleetVehicleDays": 460.0, "reservationCount": 48.0, "utilizationRate": 0.2573}, {"age": 2.5, "revenuePerFleetDay": 15876.4, "fleetVehicleDays": 460.0, "reservationCount": 41.0, "utilizationRate": 0.2397}, {"age": 2.75, "revenuePerFleetDay": 17135.0, "fleetVehicleDays": 455.0, "reservationCount": 54.0, "utilizationRate": 0.2954}, {"age": 3.0, "revenuePerFleetDay": 10454.4, "fleetVehicleDays": 450.0, "reservationCount": 29.0, "utilizationRate": 0.1573}, {"age": 3.25, "revenuePerFleetDay": 5129.8, "fleetVehicleDays": 460.0, "reservationCount": 15.0, "utilizationRate": 0.0883}, {"age": 3.5, "revenuePerFleetDay": 1834.3, "fleetVehicleDays": 360.0, "reservationCount": 4.0, "utilizationRate": 0.0275}]}, {"modelFamily": "모닝", "vehicleClass": "URBAN", "sortOrder": 32, "defaultPurchasePriceKrw": 20000000, "points": [{"age": 3.0, "revenuePerFleetDay": 767.0, "fleetVehicleDays": 1239.0, "reservationCount": 25.0, "utilizationRate": 0.0463}, {"age": 3.25, "revenuePerFleetDay": 1688.4, "fleetVehicleDays": 1667.0, "reservationCount": 50.0, "utilizationRate": 0.0696}, {"age": 3.5, "revenuePerFleetDay": 4011.5, "fleetVehicleDays": 1413.0, "reservationCount": 76.0, "utilizationRate": 0.1158}, {"age": 3.75, "revenuePerFleetDay": 5339.6, "fleetVehicleDays": 1365.0, "reservationCount": 128.0, "utilizationRate": 0.2276}, {"age": 4.0, "revenuePerFleetDay": 4806.7, "fleetVehicleDays": 1350.0, "reservationCount": 101.0, "utilizationRate": 0.1739}, {"age": 4.25, "revenuePerFleetDay": 2388.2, "fleetVehicleDays": 1380.0, "reservationCount": 66.0, "utilizationRate": 0.1167}, {"age": 4.5, "revenuePerFleetDay": 2323.5, "fleetVehicleDays": 1080.0, "reservationCount": 32.0, "utilizationRate": 0.0788}, {"age": 7.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 295.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 7.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 195.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "테슬라 모델3", "vehicleClass": "IMPORTED", "sortOrder": 33, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 5.0, "revenuePerFleetDay": 3716.7, "fleetVehicleDays": 295.0, "reservationCount": 9.0, "utilizationRate": 0.0662}, {"age": 5.25, "revenuePerFleetDay": 6619.8, "fleetVehicleDays": 460.0, "reservationCount": 29.0, "utilizationRate": 0.1005}, {"age": 5.5, "revenuePerFleetDay": 14279.2, "fleetVehicleDays": 460.0, "reservationCount": 32.0, "utilizationRate": 0.1763}, {"age": 5.75, "revenuePerFleetDay": 12183.3, "fleetVehicleDays": 455.0, "reservationCount": 37.0, "utilizationRate": 0.1734}, {"age": 6.0, "revenuePerFleetDay": 11305.4, "fleetVehicleDays": 450.0, "reservationCount": 40.0, "utilizationRate": 0.1612}, {"age": 6.25, "revenuePerFleetDay": 6796.2, "fleetVehicleDays": 460.0, "reservationCount": 31.0, "utilizationRate": 0.1306}, {"age": 6.5, "revenuePerFleetDay": 4760.7, "fleetVehicleDays": 360.0, "reservationCount": 12.0, "utilizationRate": 0.0851}]}, {"modelFamily": "니로 하이브리드", "vehicleClass": "SUV", "sortOrder": 34, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 3.0, "revenuePerFleetDay": 769.9, "fleetVehicleDays": 472.0, "reservationCount": 4.0, "utilizationRate": 0.0169}, {"age": 3.25, "revenuePerFleetDay": 3972.4, "fleetVehicleDays": 736.0, "reservationCount": 30.0, "utilizationRate": 0.1062}, {"age": 3.5, "revenuePerFleetDay": 7750.9, "fleetVehicleDays": 736.0, "reservationCount": 31.0, "utilizationRate": 0.1334}, {"age": 3.75, "revenuePerFleetDay": 8404.9, "fleetVehicleDays": 728.0, "reservationCount": 44.0, "utilizationRate": 0.1574}, {"age": 4.0, "revenuePerFleetDay": 5036.3, "fleetVehicleDays": 720.0, "reservationCount": 34.0, "utilizationRate": 0.1201}, {"age": 4.25, "revenuePerFleetDay": 3336.7, "fleetVehicleDays": 736.0, "reservationCount": 30.0, "utilizationRate": 0.1123}, {"age": 4.5, "revenuePerFleetDay": 5223.8, "fleetVehicleDays": 576.0, "reservationCount": 21.0, "utilizationRate": 0.0873}]}, {"modelFamily": "더 뉴 그랜저", "vehicleClass": "LUXURY", "sortOrder": 35, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 5.0, "revenuePerFleetDay": 1808.0, "fleetVehicleDays": 413.0, "reservationCount": 6.0, "utilizationRate": 0.0436}, {"age": 5.25, "revenuePerFleetDay": 4696.7, "fleetVehicleDays": 644.0, "reservationCount": 28.0, "utilizationRate": 0.0906}, {"age": 5.5, "revenuePerFleetDay": 7722.5, "fleetVehicleDays": 644.0, "reservationCount": 35.0, "utilizationRate": 0.1366}, {"age": 5.75, "revenuePerFleetDay": 11315.1, "fleetVehicleDays": 637.0, "reservationCount": 51.0, "utilizationRate": 0.2112}, {"age": 6.0, "revenuePerFleetDay": 7601.3, "fleetVehicleDays": 630.0, "reservationCount": 41.0, "utilizationRate": 0.138}, {"age": 6.25, "revenuePerFleetDay": 2679.6, "fleetVehicleDays": 644.0, "reservationCount": 14.0, "utilizationRate": 0.0528}, {"age": 6.5, "revenuePerFleetDay": 2287.2, "fleetVehicleDays": 504.0, "reservationCount": 7.0, "utilizationRate": 0.047}]}, {"modelFamily": "레이", "vehicleClass": "SUV", "sortOrder": 36, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 3.0, "revenuePerFleetDay": 1249.0, "fleetVehicleDays": 472.0, "reservationCount": 6.0, "utilizationRate": 0.0424}, {"age": 3.25, "revenuePerFleetDay": 2904.2, "fleetVehicleDays": 736.0, "reservationCount": 25.0, "utilizationRate": 0.102}, {"age": 3.5, "revenuePerFleetDay": 5775.5, "fleetVehicleDays": 736.0, "reservationCount": 33.0, "utilizationRate": 0.1466}, {"age": 3.75, "revenuePerFleetDay": 8106.6, "fleetVehicleDays": 728.0, "reservationCount": 45.0, "utilizationRate": 0.1472}, {"age": 4.0, "revenuePerFleetDay": 5693.9, "fleetVehicleDays": 720.0, "reservationCount": 45.0, "utilizationRate": 0.1518}, {"age": 4.25, "revenuePerFleetDay": 4130.3, "fleetVehicleDays": 736.0, "reservationCount": 30.0, "utilizationRate": 0.1094}, {"age": 4.5, "revenuePerFleetDay": 4998.6, "fleetVehicleDays": 576.0, "reservationCount": 23.0, "utilizationRate": 0.1073}]}, {"modelFamily": "BMW Z4 로드스터", "vehicleClass": "IMPORTED", "sortOrder": 37, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 4.0, "revenuePerFleetDay": 6079.9, "fleetVehicleDays": 118.0, "reservationCount": 5.0, "utilizationRate": 0.0664}, {"age": 4.25, "revenuePerFleetDay": 10864.2, "fleetVehicleDays": 184.0, "reservationCount": 12.0, "utilizationRate": 0.1304}, {"age": 4.5, "revenuePerFleetDay": 23529.6, "fleetVehicleDays": 184.0, "reservationCount": 21.0, "utilizationRate": 0.2259}, {"age": 4.75, "revenuePerFleetDay": 26921.6, "fleetVehicleDays": 182.0, "reservationCount": 27.0, "utilizationRate": 0.2819}, {"age": 5.0, "revenuePerFleetDay": 15063.0, "fleetVehicleDays": 180.0, "reservationCount": 19.0, "utilizationRate": 0.1535}, {"age": 5.25, "revenuePerFleetDay": 18787.7, "fleetVehicleDays": 184.0, "reservationCount": 16.0, "utilizationRate": 0.1795}, {"age": 5.5, "revenuePerFleetDay": 17112.0, "fleetVehicleDays": 144.0, "reservationCount": 9.0, "utilizationRate": 0.1452}]}, {"modelFamily": "그랜저 GN7", "vehicleClass": "LUXURY", "sortOrder": 38, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 0.0, "revenuePerFleetDay": 11306.4, "fleetVehicleDays": 107.0, "reservationCount": 8.0, "utilizationRate": 0.1318}, {"age": 0.25, "revenuePerFleetDay": 19303.4, "fleetVehicleDays": 460.0, "reservationCount": 54.0, "utilizationRate": 0.257}, {"age": 0.5, "revenuePerFleetDay": 21084.9, "fleetVehicleDays": 360.0, "reservationCount": 33.0, "utilizationRate": 0.2353}]}, {"modelFamily": "K8", "vehicleClass": "LUXURY", "sortOrder": 39, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 2.0, "revenuePerFleetDay": 5926.5, "fleetVehicleDays": 177.0, "reservationCount": 10.0, "utilizationRate": 0.1254}, {"age": 2.25, "revenuePerFleetDay": 10307.9, "fleetVehicleDays": 276.0, "reservationCount": 24.0, "utilizationRate": 0.1958}, {"age": 2.5, "revenuePerFleetDay": 10184.8, "fleetVehicleDays": 276.0, "reservationCount": 20.0, "utilizationRate": 0.1662}, {"age": 2.75, "revenuePerFleetDay": 14124.9, "fleetVehicleDays": 273.0, "reservationCount": 30.0, "utilizationRate": 0.2612}, {"age": 3.0, "revenuePerFleetDay": 12137.8, "fleetVehicleDays": 270.0, "reservationCount": 21.0, "utilizationRate": 0.1962}, {"age": 3.25, "revenuePerFleetDay": 4391.4, "fleetVehicleDays": 276.0, "reservationCount": 11.0, "utilizationRate": 0.0888}, {"age": 3.5, "revenuePerFleetDay": 4301.4, "fleetVehicleDays": 216.0, "reservationCount": 6.0, "utilizationRate": 0.1121}, {"age": 4.0, "revenuePerFleetDay": 1563.8, "fleetVehicleDays": 354.0, "reservationCount": 4.0, "utilizationRate": 0.0286}, {"age": 4.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 234.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "테슬라 모델Y RWD", "vehicleClass": "IMPORTED", "sortOrder": 40, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 0.25, "revenuePerFleetDay": 15161.5, "fleetVehicleDays": 260.0, "reservationCount": 21.0, "utilizationRate": 0.1529}, {"age": 0.5, "revenuePerFleetDay": 25812.5, "fleetVehicleDays": 448.0, "reservationCount": 43.0, "utilizationRate": 0.2202}]}, {"modelFamily": "더 K8", "vehicleClass": "LUXURY", "sortOrder": 41, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 0.0, "revenuePerFleetDay": 26475.7, "fleetVehicleDays": 132.0, "reservationCount": 18.0, "utilizationRate": 0.3658}, {"age": 0.25, "revenuePerFleetDay": 14047.1, "fleetVehicleDays": 368.0, "reservationCount": 35.0, "utilizationRate": 0.2167}, {"age": 0.5, "revenuePerFleetDay": 21939.3, "fleetVehicleDays": 288.0, "reservationCount": 28.0, "utilizationRate": 0.2752}]}, {"modelFamily": "EV4", "vehicleClass": "EV", "sortOrder": 42, "defaultPurchasePriceKrw": 45000000, "points": [{"age": 0.25, "revenuePerFleetDay": 12398.3, "fleetVehicleDays": 312.0, "reservationCount": 28.0, "utilizationRate": 0.1829}, {"age": 0.5, "revenuePerFleetDay": 19461.2, "fleetVehicleDays": 432.0, "reservationCount": 41.0, "utilizationRate": 0.2405}]}, {"modelFamily": "QM6", "vehicleClass": "SUV", "sortOrder": 43, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 4.0, "revenuePerFleetDay": 1220.9, "fleetVehicleDays": 177.0, "reservationCount": 1.0, "utilizationRate": 0.0272}, {"age": 4.25, "revenuePerFleetDay": 4956.7, "fleetVehicleDays": 276.0, "reservationCount": 12.0, "utilizationRate": 0.1117}, {"age": 4.5, "revenuePerFleetDay": 10638.1, "fleetVehicleDays": 276.0, "reservationCount": 18.0, "utilizationRate": 0.1715}, {"age": 4.75, "revenuePerFleetDay": 8514.3, "fleetVehicleDays": 273.0, "reservationCount": 11.0, "utilizationRate": 0.113}, {"age": 5.0, "revenuePerFleetDay": 5048.9, "fleetVehicleDays": 506.0, "reservationCount": 23.0, "utilizationRate": 0.1244}, {"age": 5.25, "revenuePerFleetDay": 2893.1, "fleetVehicleDays": 644.0, "reservationCount": 13.0, "utilizationRate": 0.0623}, {"age": 5.5, "revenuePerFleetDay": 1431.9, "fleetVehicleDays": 584.0, "reservationCount": 5.0, "utilizationRate": 0.0258}, {"age": 5.75, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 364.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 6.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 360.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 6.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 70.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "볼보 XC40", "vehicleClass": "IMPORTED", "sortOrder": 44, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 3.0, "revenuePerFleetDay": 5380.3, "fleetVehicleDays": 118.0, "reservationCount": 3.0, "utilizationRate": 0.0719}, {"age": 3.25, "revenuePerFleetDay": 9716.2, "fleetVehicleDays": 184.0, "reservationCount": 12.0, "utilizationRate": 0.1445}, {"age": 3.5, "revenuePerFleetDay": 21819.4, "fleetVehicleDays": 184.0, "reservationCount": 15.0, "utilizationRate": 0.2373}, {"age": 3.75, "revenuePerFleetDay": 17020.3, "fleetVehicleDays": 182.0, "reservationCount": 13.0, "utilizationRate": 0.1489}, {"age": 4.0, "revenuePerFleetDay": 5188.8, "fleetVehicleDays": 180.0, "reservationCount": 5.0, "utilizationRate": 0.0598}, {"age": 4.25, "revenuePerFleetDay": 3889.2, "fleetVehicleDays": 184.0, "reservationCount": 7.0, "utilizationRate": 0.0552}, {"age": 4.5, "revenuePerFleetDay": 2138.2, "fleetVehicleDays": 144.0, "reservationCount": 2.0, "utilizationRate": 0.0318}]}, {"modelFamily": "BMW 520i M스포츠", "vehicleClass": "IMPORTED", "sortOrder": 45, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 0.0, "revenuePerFleetDay": 19551.3, "fleetVehicleDays": 64.0, "reservationCount": 7.0, "utilizationRate": 0.1755}, {"age": 0.25, "revenuePerFleetDay": 16219.8, "fleetVehicleDays": 368.0, "reservationCount": 25.0, "utilizationRate": 0.1354}, {"age": 0.5, "revenuePerFleetDay": 11354.4, "fleetVehicleDays": 288.0, "reservationCount": 12.0, "utilizationRate": 0.1022}]}, {"modelFamily": "BMW X7 xdrive40i 하이브리드", "vehicleClass": "SUPERCAR", "sortOrder": 46, "defaultPurchasePriceKrw": 150000000, "points": [{"age": 0.5, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 62.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 0.75, "revenuePerFleetDay": 7131.3, "fleetVehicleDays": 91.0, "reservationCount": 1.0, "utilizationRate": 0.0128}, {"age": 1.0, "revenuePerFleetDay": 38316.3, "fleetVehicleDays": 90.0, "reservationCount": 4.0, "utilizationRate": 0.0913}, {"age": 1.25, "revenuePerFleetDay": 39815.3, "fleetVehicleDays": 92.0, "reservationCount": 2.0, "utilizationRate": 0.0736}, {"age": 1.5, "revenuePerFleetDay": 15897.5, "fleetVehicleDays": 61.0, "reservationCount": 2.0, "utilizationRate": 0.0656}]}, {"modelFamily": "베뉴", "vehicleClass": "SUV", "sortOrder": 47, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 3.0, "revenuePerFleetDay": 3133.5, "fleetVehicleDays": 118.0, "reservationCount": 4.0, "utilizationRate": 0.1086}, {"age": 3.25, "revenuePerFleetDay": 7976.8, "fleetVehicleDays": 184.0, "reservationCount": 17.0, "utilizationRate": 0.2046}, {"age": 3.5, "revenuePerFleetDay": 3720.5, "fleetVehicleDays": 184.0, "reservationCount": 12.0, "utilizationRate": 0.1285}, {"age": 3.75, "revenuePerFleetDay": 9820.5, "fleetVehicleDays": 182.0, "reservationCount": 21.0, "utilizationRate": 0.2749}, {"age": 4.0, "revenuePerFleetDay": 6399.7, "fleetVehicleDays": 180.0, "reservationCount": 14.0, "utilizationRate": 0.1545}, {"age": 4.25, "revenuePerFleetDay": 3446.7, "fleetVehicleDays": 184.0, "reservationCount": 6.0, "utilizationRate": 0.079}, {"age": 4.5, "revenuePerFleetDay": 5568.4, "fleetVehicleDays": 144.0, "reservationCount": 9.0, "utilizationRate": 0.1338}, {"age": 6.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 118.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 6.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 62.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "더뉴그랜드스타렉스12인", "vehicleClass": "RV", "sortOrder": 48, "defaultPurchasePriceKrw": 45000000, "points": [{"age": 6.0, "revenuePerFleetDay": 417.0, "fleetVehicleDays": 118.0, "reservationCount": 1.0, "utilizationRate": 0.0117}, {"age": 6.25, "revenuePerFleetDay": 2875.3, "fleetVehicleDays": 184.0, "reservationCount": 4.0, "utilizationRate": 0.0604}, {"age": 6.5, "revenuePerFleetDay": 2011.5, "fleetVehicleDays": 184.0, "reservationCount": 3.0, "utilizationRate": 0.0422}, {"age": 6.75, "revenuePerFleetDay": 3391.8, "fleetVehicleDays": 182.0, "reservationCount": 5.0, "utilizationRate": 0.058}, {"age": 7.0, "revenuePerFleetDay": 6367.4, "fleetVehicleDays": 180.0, "reservationCount": 8.0, "utilizationRate": 0.1184}, {"age": 7.25, "revenuePerFleetDay": 8449.7, "fleetVehicleDays": 184.0, "reservationCount": 7.0, "utilizationRate": 0.0718}, {"age": 7.5, "revenuePerFleetDay": 11373.3, "fleetVehicleDays": 144.0, "reservationCount": 7.0, "utilizationRate": 0.1223}]}, {"modelFamily": "아우디A5 카브리올레", "vehicleClass": "IMPORTED", "sortOrder": 49, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 4.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 59.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 4.25, "revenuePerFleetDay": 4077.0, "fleetVehicleDays": 92.0, "reservationCount": 3.0, "utilizationRate": 0.0438}, {"age": 4.5, "revenuePerFleetDay": 23256.3, "fleetVehicleDays": 92.0, "reservationCount": 9.0, "utilizationRate": 0.2212}, {"age": 4.75, "revenuePerFleetDay": 16999.3, "fleetVehicleDays": 91.0, "reservationCount": 7.0, "utilizationRate": 0.1743}, {"age": 5.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 90.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 5.25, "revenuePerFleetDay": 13691.3, "fleetVehicleDays": 92.0, "reservationCount": 7.0, "utilizationRate": 0.1522}, {"age": 5.5, "revenuePerFleetDay": 7954.3, "fleetVehicleDays": 61.0, "reservationCount": 3.0, "utilizationRate": 0.1127}]}, {"modelFamily": "베리뉴티볼리", "vehicleClass": "SUV", "sortOrder": 50, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 5.0, "revenuePerFleetDay": 1692.8, "fleetVehicleDays": 236.0, "reservationCount": 2.0, "utilizationRate": 0.034}, {"age": 5.25, "revenuePerFleetDay": 1293.2, "fleetVehicleDays": 368.0, "reservationCount": 6.0, "utilizationRate": 0.0268}, {"age": 5.5, "revenuePerFleetDay": 2506.3, "fleetVehicleDays": 368.0, "reservationCount": 10.0, "utilizationRate": 0.0627}, {"age": 5.75, "revenuePerFleetDay": 5007.2, "fleetVehicleDays": 364.0, "reservationCount": 16.0, "utilizationRate": 0.1335}, {"age": 6.0, "revenuePerFleetDay": 3783.8, "fleetVehicleDays": 360.0, "reservationCount": 15.0, "utilizationRate": 0.0766}, {"age": 6.25, "revenuePerFleetDay": 428.0, "fleetVehicleDays": 368.0, "reservationCount": 3.0, "utilizationRate": 0.0141}, {"age": 6.5, "revenuePerFleetDay": 1139.0, "fleetVehicleDays": 288.0, "reservationCount": 3.0, "utilizationRate": 0.0247}]}, {"modelFamily": "XM3", "vehicleClass": "SUV", "sortOrder": 51, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 3.0, "revenuePerFleetDay": 1419.6, "fleetVehicleDays": 118.0, "reservationCount": 2.0, "utilizationRate": 0.0316}, {"age": 3.25, "revenuePerFleetDay": 4236.8, "fleetVehicleDays": 184.0, "reservationCount": 8.0, "utilizationRate": 0.1021}, {"age": 3.5, "revenuePerFleetDay": 5531.7, "fleetVehicleDays": 184.0, "reservationCount": 8.0, "utilizationRate": 0.1071}, {"age": 3.75, "revenuePerFleetDay": 6693.7, "fleetVehicleDays": 182.0, "reservationCount": 8.0, "utilizationRate": 0.1527}, {"age": 4.0, "revenuePerFleetDay": 7187.9, "fleetVehicleDays": 180.0, "reservationCount": 12.0, "utilizationRate": 0.1707}, {"age": 4.25, "revenuePerFleetDay": 2638.8, "fleetVehicleDays": 184.0, "reservationCount": 5.0, "utilizationRate": 0.0596}, {"age": 4.5, "revenuePerFleetDay": 325.0, "fleetVehicleDays": 144.0, "reservationCount": 1.0, "utilizationRate": 0.0095}]}, {"modelFamily": "셀토스", "vehicleClass": "SUV", "sortOrder": 52, "defaultPurchasePriceKrw": 40000000, "points": [{"age": 5.0, "revenuePerFleetDay": 176.3, "fleetVehicleDays": 236.0, "reservationCount": 1.0, "utilizationRate": 0.004}, {"age": 5.25, "revenuePerFleetDay": 599.1, "fleetVehicleDays": 368.0, "reservationCount": 2.0, "utilizationRate": 0.0147}, {"age": 5.5, "revenuePerFleetDay": 2387.1, "fleetVehicleDays": 368.0, "reservationCount": 10.0, "utilizationRate": 0.0558}, {"age": 5.75, "revenuePerFleetDay": 3896.2, "fleetVehicleDays": 364.0, "reservationCount": 12.0, "utilizationRate": 0.0836}, {"age": 6.0, "revenuePerFleetDay": 1552.5, "fleetVehicleDays": 360.0, "reservationCount": 5.0, "utilizationRate": 0.0403}, {"age": 6.25, "revenuePerFleetDay": 1348.9, "fleetVehicleDays": 368.0, "reservationCount": 6.0, "utilizationRate": 0.0386}, {"age": 6.5, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 288.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "SM6", "vehicleClass": "MIDSIZE", "sortOrder": 53, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 5.0, "revenuePerFleetDay": 983.9, "fleetVehicleDays": 118.0, "reservationCount": 1.0, "utilizationRate": 0.0322}, {"age": 5.25, "revenuePerFleetDay": 1022.8, "fleetVehicleDays": 184.0, "reservationCount": 3.0, "utilizationRate": 0.0374}, {"age": 5.5, "revenuePerFleetDay": 2014.2, "fleetVehicleDays": 184.0, "reservationCount": 5.0, "utilizationRate": 0.0631}, {"age": 5.75, "revenuePerFleetDay": 2402.4, "fleetVehicleDays": 182.0, "reservationCount": 7.0, "utilizationRate": 0.0889}, {"age": 6.0, "revenuePerFleetDay": 2818.6, "fleetVehicleDays": 180.0, "reservationCount": 6.0, "utilizationRate": 0.1073}, {"age": 6.25, "revenuePerFleetDay": 1463.0, "fleetVehicleDays": 184.0, "reservationCount": 5.0, "utilizationRate": 0.0655}, {"age": 6.5, "revenuePerFleetDay": 2522.1, "fleetVehicleDays": 144.0, "reservationCount": 3.0, "utilizationRate": 0.0551}]}, {"modelFamily": "더 뉴 K7", "vehicleClass": "LUXURY", "sortOrder": 54, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 4.0, "revenuePerFleetDay": 3140.8, "fleetVehicleDays": 236.0, "reservationCount": 4.0, "utilizationRate": 0.0502}, {"age": 4.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 156.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "쏘울 부스터", "vehicleClass": "COMPACT", "sortOrder": 55, "defaultPurchasePriceKrw": 25000000, "points": [{"age": 6.0, "revenuePerFleetDay": 505.9, "fleetVehicleDays": 236.0, "reservationCount": 1.0, "utilizationRate": 0.0084}, {"age": 6.25, "revenuePerFleetDay": 259.0, "fleetVehicleDays": 156.0, "reservationCount": 1.0, "utilizationRate": 0.0003}]}, {"modelFamily": "엑센트", "vehicleClass": "URBAN", "sortOrder": 56, "defaultPurchasePriceKrw": 20000000, "points": [{"age": 6.0, "revenuePerFleetDay": 372.9, "fleetVehicleDays": 59.0, "reservationCount": 1.0, "utilizationRate": 0.0042}, {"age": 6.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 31.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "BMW X6 xdrive30d M sport", "vehicleClass": "SUPERCAR", "sortOrder": 58, "defaultPurchasePriceKrw": 150000000, "points": [{"age": 0.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 90.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 0.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 92.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 0.5, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 61.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "그랜져IG", "vehicleClass": "LUXURY", "sortOrder": 59, "defaultPurchasePriceKrw": 35000000, "points": [{"age": 6.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 295.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 6.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 195.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}, {"modelFamily": "폭스바겐 제타", "vehicleClass": "IMPORTED", "sortOrder": 60, "defaultPurchasePriceKrw": 75000000, "points": [{"age": 3.0, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 177.0, "reservationCount": 0.0, "utilizationRate": 0.0}, {"age": 3.25, "revenuePerFleetDay": 0.0, "fleetVehicleDays": 117.0, "reservationCount": 0.0, "utilizationRate": 0.0}]}];
+    const krw = new Intl.NumberFormat("ko-KR");
+    const select = document.getElementById("depreciationModelSelect");
+    const priceInput = document.getElementById("purchasePriceInput");
+    const inputs = [
+      priceInput,
+      document.getElementById("rateYear1Input"),
+      document.getElementById("rateYear2Input"),
+      document.getElementById("rateYear3Input"),
+      document.getElementById("rateLaterInput"),
+      document.getElementById("floorPctInput"),
+    ];
+    const svg = document.getElementById("depreciationChart");
+    const summary = document.getElementById("depreciationSummary");
+
+    function populateOptions() {
+      depreciationData
+        .slice()
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .forEach((item, index) => {
+          const option = document.createElement("option");
+          option.value = index;
+          option.textContent = `${item.modelFamily} (${item.vehicleClass})`;
+          select.appendChild(option);
+        });
+    }
+
+    function valueAtAge(price, age, rates, floorPct) {
+      let remainingPct = 1;
+      let cursor = 0;
+      const segments = [
+        [1, rates.year1],
+        [2, rates.year2],
+        [3, rates.year3],
+      ];
+      for (const [end, rate] of segments) {
+        if (age > cursor) {
+          remainingPct -= Math.min(age, end) - cursor > 0 ? (Math.min(age, end) - cursor) * rate : 0;
+          cursor = end;
+        }
+      }
+      if (age > 3) remainingPct -= (age - 3) * rates.later;
+      return Math.max(price * remainingPct, price * floorPct);
+    }
+
+    function depreciationPerDay(price, age, rates, floorPct) {
+      const nextAge = age + 1 / 12;
+      const monthLoss = valueAtAge(price, age, rates, floorPct) - valueAtAge(price, nextAge, rates, floorPct);
+      return Math.max(0, monthLoss / (365.25 / 12));
+    }
+
+    function polyline(points, xScale, yScale, key) {
+      return points.map((point) => `${xScale(point.age).toFixed(1)},${yScale(point[key]).toFixed(1)}`).join(" ");
+    }
+
+    function drawChart() {
+      const item = depreciationData[Number(select.value || 0)];
+      if (!item) return;
+      if (document.activeElement !== priceInput || !priceInput.value) {
+        priceInput.value = item.defaultPurchasePriceKrw;
+      }
+      const price = Number(priceInput.value || item.defaultPurchasePriceKrw);
+      const rates = {
+        year1: Number(document.getElementById("rateYear1Input").value || 0) / 100,
+        year2: Number(document.getElementById("rateYear2Input").value || 0) / 100,
+        year3: Number(document.getElementById("rateYear3Input").value || 0) / 100,
+        later: Number(document.getElementById("rateLaterInput").value || 0) / 100,
+      };
+      const floorPct = Number(document.getElementById("floorPctInput").value || 0) / 100;
+      const points = item.points
+        .map((point) => {
+          const depreciation = depreciationPerDay(price, point.age, rates, floorPct);
+          return {
+            ...point,
+            depreciationPerDay: depreciation,
+            netPerDay: point.revenuePerFleetDay - depreciation,
+          };
+        })
+        .sort((a, b) => a.age - b.age);
+      const margin = { left: 70, right: 34, top: 28, bottom: 54 };
+      const width = 980;
+      const height = 420;
+      const chartWidth = width - margin.left - margin.right;
+      const chartHeight = height - margin.top - margin.bottom;
+      const maxAge = Math.max(1, ...points.map((point) => point.age));
+      const maxValue = Math.max(1000, ...points.flatMap((point) => [
+        point.revenuePerFleetDay,
+        point.depreciationPerDay,
+        Math.max(0, point.netPerDay),
+      ]));
+      const xScale = (age) => margin.left + (age / maxAge) * chartWidth;
+      const yScale = (value) => margin.top + chartHeight - (value / maxValue) * chartHeight;
+      const ticks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => Math.round(maxValue * ratio / 1000) * 1000);
+      const ageTicks = Array.from(new Set([0, Math.ceil(maxAge / 4), Math.ceil(maxAge / 2), Math.ceil(maxAge * 3 / 4), Math.ceil(maxAge)]));
+      const sellPoint = points.find((point) => point.age >= 1 && point.revenuePerFleetDay <= point.depreciationPerDay);
+      const worstPoint = points.reduce((best, point) => !best || point.netPerDay < best.netPerDay ? point : best, null);
+      const marker = sellPoint || worstPoint;
+
+      let markup = `<rect x="0" y="0" width="${width}" height="${height}" fill="#fff"/>`;
+      ticks.forEach((tick) => {
+        const y = yScale(tick);
+        markup += `<line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="#edf2f7"/>`;
+        markup += `<text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" font-size="11" fill="#52606d">${krw.format(tick)}원</text>`;
+      });
+      ageTicks.forEach((tick) => {
+        const x = xScale(tick);
+        markup += `<line x1="${x}" y1="${margin.top}" x2="${x}" y2="${height - margin.bottom}" stroke="#f5f7fa"/>`;
+        markup += `<text x="${x}" y="${height - 20}" text-anchor="middle" font-size="11" fill="#52606d">${tick}년</text>`;
+      });
+      markup += `<line x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" stroke="#9fb3c8"/>`;
+      markup += `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}" stroke="#9fb3c8"/>`;
+      markup += `<polyline points="${polyline(points, xScale, yScale, "revenuePerFleetDay")}" fill="none" stroke="#2563eb" stroke-width="3"/>`;
+      markup += `<polyline points="${polyline(points, xScale, yScale, "depreciationPerDay")}" fill="none" stroke="#dc2626" stroke-width="3"/>`;
+      markup += `<polyline points="${polyline(points, xScale, yScale, "netPerDay")}" fill="none" stroke="#166534" stroke-width="3" stroke-dasharray="6 5"/>`;
+      points.forEach((point) => {
+        markup += `<circle cx="${xScale(point.age)}" cy="${yScale(point.revenuePerFleetDay)}" r="3.5" fill="#2563eb"><title>${point.age}년: 매출 ${krw.format(Math.round(point.revenuePerFleetDay))}원/일, 감가 ${krw.format(Math.round(point.depreciationPerDay))}원/일</title></circle>`;
+      });
+      if (marker) {
+        const x = xScale(marker.age);
+        markup += `<line x1="${x}" y1="${margin.top}" x2="${x}" y2="${height - margin.bottom}" stroke="#111827" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+        markup += `<text x="${Math.min(x + 8, width - 230)}" y="${margin.top + 18}" font-size="12" fill="#111827">매각 검토: ${marker.age.toFixed(1)}년</text>`;
+      }
+      svg.innerHTML = markup;
+
+      const latest = points[points.length - 1];
+      const recommendation = sellPoint
+        ? `${sellPoint.age.toFixed(1)}년 부근부터 보유일당 매출이 추정 감가/일 이하로 내려갑니다.`
+        : `관측된 차령 구간에서는 보유일당 매출이 추정 감가/일보다 높습니다.`;
+      summary.innerHTML = `
+        <strong>${item.modelFamily}</strong> ${
+          recommendation
+        } 최근 관측점 기준 매출 ${krw.format(Math.round(latest.revenuePerFleetDay))}원/일,
+        감가 ${krw.format(Math.round(latest.depreciationPerDay))}원/일,
+        순기여 ${krw.format(Math.round(latest.netPerDay))}원/일입니다.
+      `;
+    }
+
+    populateOptions();
+    select.value = "0";
+    priceInput.value = depreciationData[0]?.defaultPurchasePriceKrw || 35000000;
+    select.addEventListener("change", () => {
+      priceInput.value = depreciationData[Number(select.value)]?.defaultPurchasePriceKrw || 35000000;
+      drawChart();
+    });
+    inputs.forEach((input) => input.addEventListener("input", drawChart));
+    drawChart();
+  </script>
+  <p class="note">표시 가능 차종: 60개. 매각 검토 지점은 실제 매각가가 아니라 입력한 감가 가정으로 계산한 기준선입니다.</p>
+
+  <h2>판정 기준</h2>
+  <p class="note">각 연식의 월별 매출을 기준으로 첫 3개월과 최근 3개월을 비교했습니다.
+  구형 연식에 더 최신 연식이 같은 차종 안에 존재할 때, 최근 보유일당 매출 유지율, 최근 예약 유지율, 최근 차종 내 매출 점유율, 최신 연식의 최근 매출 점유율을 함께 봤습니다.
+  `구형 연식도 보유 가치 있음`은 최근 예약 20건 이상, 보유일당 매출 유지율 70% 이상, 최근 차종 내 매출 점유율 15% 이상입니다.
+  `신형 전환 영향 큼`은 보유일당 매출 유지율 40% 미만, 최근 예약 5건 미만, 또는 차종 내 점유율이 크게 빠지고 최신 연식 점유율이 높은 경우입니다.</p>
+  <h2>구형 연식도 보유 가치 있음</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model_family</th>
+      <th>vehicle_class</th>
+      <th>model_year_latest</th>
+      <th>newest_model_year</th>
+      <th>year_gap_to_newest</th>
+      <th>recent_reservations</th>
+      <th>recent_revenue_krw</th>
+      <th>recent_revenue_per_fleet_day</th>
+      <th>revenue_per_fleet_day_retention</th>
+      <th>recent_family_revenue_share</th>
+      <th>newest_recent_revenue_share</th>
+      <th>hold_value_score</th>
+      <th>year_switch_signal</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>투싼</td>
+      <td>SUV</td>
+      <td>2025.0</td>
+      <td>2026.0</td>
+      <td>1.0</td>
+      <td>128.0</td>
+      <td>20,109,498원</td>
+      <td>17,456원</td>
+      <td>142.0%</td>
+      <td>55.2%</td>
+      <td>19.6%</td>
+      <td>95</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>레이</td>
+      <td>URBAN</td>
+      <td>2025.0</td>
+      <td>2026.0</td>
+      <td>1.0</td>
+      <td>146.0</td>
+      <td>12,624,106원</td>
+      <td>8,767원</td>
+      <td>141.7%</td>
+      <td>61.8%</td>
+      <td>19.4%</td>
+      <td>91</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>카니발</td>
+      <td>RV</td>
+      <td>2025.0</td>
+      <td>2026.0</td>
+      <td>1.0</td>
+      <td>122.0</td>
+      <td>29,709,911원</td>
+      <td>18,756원</td>
+      <td>145.6%</td>
+      <td>33.8%</td>
+      <td>16.8%</td>
+      <td>85</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>K3</td>
+      <td>COMPACT</td>
+      <td>2022.0</td>
+      <td>2024.0</td>
+      <td>2.0</td>
+      <td>60.0</td>
+      <td>7,280,429원</td>
+      <td>4,815원</td>
+      <td>466.5%</td>
+      <td>41.1%</td>
+      <td>51.0%</td>
+      <td>83</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>코나</td>
+      <td>EV</td>
+      <td>2020.0</td>
+      <td>2024.0</td>
+      <td>4.0</td>
+      <td>68.0</td>
+      <td>9,810,349원</td>
+      <td>3,893원</td>
+      <td>302.9%</td>
+      <td>78.8%</td>
+      <td>21.2%</td>
+      <td>83</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>카니발</td>
+      <td>RV</td>
+      <td>2024.0</td>
+      <td>2026.0</td>
+      <td>2.0</td>
+      <td>95.0</td>
+      <td>29,214,675원</td>
+      <td>15,028원</td>
+      <td>265.4%</td>
+      <td>33.2%</td>
+      <td>16.8%</td>
+      <td>81</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>아반떼</td>
+      <td>COMPACT</td>
+      <td>2024.0</td>
+      <td>2026.0</td>
+      <td>2.0</td>
+      <td>120.0</td>
+      <td>14,936,166원</td>
+      <td>12,965원</td>
+      <td>158.6%</td>
+      <td>36.4%</td>
+      <td>29.6%</td>
+      <td>81</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>K5</td>
+      <td>MIDSIZE</td>
+      <td>2024.0</td>
+      <td>2026.0</td>
+      <td>2.0</td>
+      <td>120.0</td>
+      <td>13,409,912원</td>
+      <td>10,347원</td>
+      <td>198.4%</td>
+      <td>33.2%</td>
+      <td>59.5%</td>
+      <td>81</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>쏘렌토</td>
+      <td>SUV</td>
+      <td>2023.0</td>
+      <td>2024.0</td>
+      <td>1.0</td>
+      <td>22.0</td>
+      <td>4,868,616원</td>
+      <td>9,660원</td>
+      <td>1316.9%</td>
+      <td>20.1%</td>
+      <td>69.8%</td>
+      <td>75</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>스타리아</td>
+      <td>RV</td>
+      <td>2024.0</td>
+      <td>2026.0</td>
+      <td>2.0</td>
+      <td>33.0</td>
+      <td>7,434,228원</td>
+      <td>6,884원</td>
+      <td>156.3%</td>
+      <td>36.5%</td>
+      <td>49.3%</td>
+      <td>72</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>스포티지</td>
+      <td>SUV</td>
+      <td>2025.0</td>
+      <td>2026.0</td>
+      <td>1.0</td>
+      <td>61.0</td>
+      <td>11,081,360원</td>
+      <td>11,839원</td>
+      <td>122.6%</td>
+      <td>39.3%</td>
+      <td>52.9%</td>
+      <td>72</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+    <tr>
+      <td>BMW 420i</td>
+      <td>IMPORTED</td>
+      <td>2024.0</td>
+      <td>2026.0</td>
+      <td>2.0</td>
+      <td>24.0</td>
+      <td>7,253,233원</td>
+      <td>20,148원</td>
+      <td>174.4%</td>
+      <td>33.9%</td>
+      <td>66.1%</td>
+      <td>71</td>
+      <td>구형 연식도 보유 가치 있음</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>신형 전환 영향 큼</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model_family</th>
+      <th>vehicle_class</th>
+      <th>model_year_latest</th>
+      <th>newest_model_year</th>
+      <th>year_gap_to_newest</th>
+      <th>recent_reservations</th>
+      <th>recent_revenue_krw</th>
+      <th>recent_revenue_per_fleet_day</th>
+      <th>revenue_per_fleet_day_retention</th>
+      <th>family_share_change</th>
+      <th>newest_recent_revenue_share</th>
+      <th>cannibalization_risk_score</th>
+      <th>year_switch_signal</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>팰리세이드</td>
+      <td>SUV</td>
+      <td>2023.0</td>
+      <td>2026.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-100.0%</td>
+      <td>64.7%</td>
+      <td>91</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>QM6</td>
+      <td>SUV</td>
+      <td>2020.0</td>
+      <td>2021.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-35.8%</td>
+      <td>100.0%</td>
+      <td>86</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>BMW 420i</td>
+      <td>IMPORTED</td>
+      <td>2022.0</td>
+      <td>2026.0</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-24.7%</td>
+      <td>66.1%</td>
+      <td>83</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>머스탱</td>
+      <td>IMPORTED</td>
+      <td>2020.0</td>
+      <td>2024.0</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-9.3%</td>
+      <td>89.3%</td>
+      <td>80</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>싼타페</td>
+      <td>SUV</td>
+      <td>2019.0</td>
+      <td>2024.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>100.0%</td>
+      <td>80</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>모닝</td>
+      <td>URBAN</td>
+      <td>2018.0</td>
+      <td>2022.0</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>100.0%</td>
+      <td>78</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>쏘나타</td>
+      <td>MIDSIZE</td>
+      <td>2021.0</td>
+      <td>2024.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-6.5%</td>
+      <td>87.6%</td>
+      <td>77</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>K5</td>
+      <td>MIDSIZE</td>
+      <td>2021.0</td>
+      <td>2026.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-5.3%</td>
+      <td>59.5%</td>
+      <td>76</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>베뉴</td>
+      <td>SUV</td>
+      <td>2019.0</td>
+      <td>2022.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>100.0%</td>
+      <td>76</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>머스탱</td>
+      <td>IMPORTED</td>
+      <td>2021.0</td>
+      <td>2024.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-3.3%</td>
+      <td>89.3%</td>
+      <td>76</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>G80</td>
+      <td>LUXURY</td>
+      <td>2019.0</td>
+      <td>2025.0</td>
+      <td>6.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>71.1%</td>
+      <td>76</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>쏘렌토</td>
+      <td>SUV</td>
+      <td>2018.0</td>
+      <td>2024.0</td>
+      <td>6.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>69.8%</td>
+      <td>75</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>스타리아</td>
+      <td>RV</td>
+      <td>2022.0</td>
+      <td>2026.0</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-10.0%</td>
+      <td>49.3%</td>
+      <td>74</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>쏠라티</td>
+      <td>RV</td>
+      <td>2023.0</td>
+      <td>2026.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-19.2%</td>
+      <td>32.2%</td>
+      <td>73</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>K3</td>
+      <td>COMPACT</td>
+      <td>2019.0</td>
+      <td>2024.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>51.0%</td>
+      <td>73</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>벤츠</td>
+      <td>IMPORTED</td>
+      <td>2019.0</td>
+      <td>2024.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>49.8%</td>
+      <td>72</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>쏘렌토</td>
+      <td>SUV</td>
+      <td>2021.0</td>
+      <td>2024.0</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>1,083,000원</td>
+      <td>5,014원</td>
+      <td>-</td>
+      <td>4.5%</td>
+      <td>69.8%</td>
+      <td>71</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>아반떼</td>
+      <td>COMPACT</td>
+      <td>2020.0</td>
+      <td>2026.0</td>
+      <td>6.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-2.9%</td>
+      <td>29.6%</td>
+      <td>71</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>아반떼</td>
+      <td>COMPACT</td>
+      <td>2019.0</td>
+      <td>2026.0</td>
+      <td>7.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>29.6%</td>
+      <td>69</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>카니발</td>
+      <td>RV</td>
+      <td>2019.0</td>
+      <td>2026.0</td>
+      <td>7.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>-1.8%</td>
+      <td>16.8%</td>
+      <td>68</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>코나</td>
+      <td>SUV</td>
+      <td>2018.0</td>
+      <td>2024.0</td>
+      <td>6.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>21.2%</td>
+      <td>68</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>K8</td>
+      <td>LUXURY</td>
+      <td>2021.0</td>
+      <td>2023.0</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>156,750원</td>
+      <td>390원</td>
+      <td>38.0%</td>
+      <td>-16.8%</td>
+      <td>100.0%</td>
+      <td>62</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>미니</td>
+      <td>IMPORTED</td>
+      <td>2024.0</td>
+      <td>2025.0</td>
+      <td>1.0</td>
+      <td>9.0</td>
+      <td>1,641,315원</td>
+      <td>5,699원</td>
+      <td>89.5%</td>
+      <td>-30.2%</td>
+      <td>64.1%</td>
+      <td>39</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>레이</td>
+      <td>URBAN</td>
+      <td>2018.0</td>
+      <td>2026.0</td>
+      <td>8.0</td>
+      <td>3.0</td>
+      <td>80,966원</td>
+      <td>55원</td>
+      <td>51.9%</td>
+      <td>-1.7%</td>
+      <td>19.4%</td>
+      <td>38</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>GV80</td>
+      <td>SUV</td>
+      <td>2021.0</td>
+      <td>2025.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>1,574,330원</td>
+      <td>7,289원</td>
+      <td>142.0%</td>
+      <td>-6.8%</td>
+      <td>80.7%</td>
+      <td>34</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>포르쉐</td>
+      <td>SUPERCAR</td>
+      <td>2022.0</td>
+      <td>2025.0</td>
+      <td>3.0</td>
+      <td>10.0</td>
+      <td>5,933,041원</td>
+      <td>82,403원</td>
+      <td>701.6%</td>
+      <td>-51.2%</td>
+      <td>51.2%</td>
+      <td>34</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>쏠라티</td>
+      <td>RV</td>
+      <td>2019.0</td>
+      <td>2026.0</td>
+      <td>7.0</td>
+      <td>1.0</td>
+      <td>752,495원</td>
+      <td>3,484원</td>
+      <td>187.9%</td>
+      <td>-0.6%</td>
+      <td>32.2%</td>
+      <td>25</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>카니발</td>
+      <td>RV</td>
+      <td>2018.0</td>
+      <td>2026.0</td>
+      <td>8.0</td>
+      <td>3.0</td>
+      <td>328,795원</td>
+      <td>571원</td>
+      <td>179.0%</td>
+      <td>-0.9%</td>
+      <td>16.8%</td>
+      <td>21</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>쏠라티</td>
+      <td>RV</td>
+      <td>2024.0</td>
+      <td>2026.0</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>863,075원</td>
+      <td>11,987원</td>
+      <td>120.6%</td>
+      <td>-5.9%</td>
+      <td>32.2%</td>
+      <td>18</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+    <tr>
+      <td>K3</td>
+      <td>COMPACT</td>
+      <td>2018.0</td>
+      <td>2024.0</td>
+      <td>6.0</td>
+      <td>1.0</td>
+      <td>71,060원</td>
+      <td>530원</td>
+      <td>134.3%</td>
+      <td>-0.2%</td>
+      <td>51.0%</td>
+      <td>18</td>
+      <td>신형 전환 영향 큼</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>차종 단위 비교</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model_family</th>
+      <th>vehicle_class</th>
+      <th>old_year_count</th>
+      <th>newest_model_year</th>
+      <th>recent_old_reservations</th>
+      <th>recent_old_revenue_krw</th>
+      <th>old_revenue_retention</th>
+      <th>avg_recent_old_share</th>
+      <th>avg_newer_year_pressure</th>
+      <th>avg_hold_value_score</th>
+      <th>avg_cannibalization_risk_score</th>
+      <th>family_signal</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>포르쉐</td>
+      <td>SUPERCAR</td>
+      <td>1</td>
+      <td>2025.0</td>
+      <td>10.0</td>
+      <td>5,933,041원</td>
+      <td>280.6%</td>
+      <td>48.8%</td>
+      <td>51.2%</td>
+      <td>94</td>
+      <td>34</td>
+      <td>차종 단위로 신형 쏠림</td>
+    </tr>
+    <tr>
+      <td>벤츠</td>
+      <td>SUPERCAR</td>
+      <td>1</td>
+      <td>2024.0</td>
+      <td>10.0</td>
+      <td>7,618,255원</td>
+      <td>226.4%</td>
+      <td>32.2%</td>
+      <td>49.8%</td>
+      <td>88</td>
+      <td>19</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>코나</td>
+      <td>EV</td>
+      <td>1</td>
+      <td>2024.0</td>
+      <td>68.0</td>
+      <td>9,810,349원</td>
+      <td>242.3%</td>
+      <td>78.8%</td>
+      <td>21.2%</td>
+      <td>83</td>
+      <td>11</td>
+      <td>차종 단위로 구형도 유지</td>
+    </tr>
+    <tr>
+      <td>투싼</td>
+      <td>SUV</td>
+      <td>4</td>
+      <td>2026.0</td>
+      <td>184.0</td>
+      <td>29,324,398원</td>
+      <td>197.5%</td>
+      <td>20.1%</td>
+      <td>19.6%</td>
+      <td>77</td>
+      <td>11</td>
+      <td>차종 단위로 구형도 유지</td>
+    </tr>
+    <tr>
+      <td>레이</td>
+      <td>SUV</td>
+      <td>1</td>
+      <td>2026.0</td>
+      <td>23.0</td>
+      <td>2,879,218원</td>
+      <td>205.9%</td>
+      <td>14.1%</td>
+      <td>19.4%</td>
+      <td>75</td>
+      <td>11</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>스포티지</td>
+      <td>SUV</td>
+      <td>2</td>
+      <td>2026.0</td>
+      <td>73.0</td>
+      <td>13,295,580원</td>
+      <td>133.2%</td>
+      <td>23.5%</td>
+      <td>52.9%</td>
+      <td>66</td>
+      <td>29</td>
+      <td>차종 단위로 구형도 유지</td>
+    </tr>
+    <tr>
+      <td>GV70</td>
+      <td>SUV</td>
+      <td>2</td>
+      <td>2025.0</td>
+      <td>23.0</td>
+      <td>3,702,016원</td>
+      <td>105.8%</td>
+      <td>16.9%</td>
+      <td>66.2%</td>
+      <td>63</td>
+      <td>21</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>레이</td>
+      <td>URBAN</td>
+      <td>3</td>
+      <td>2026.0</td>
+      <td>155.0</td>
+      <td>13,672,562원</td>
+      <td>170.5%</td>
+      <td>22.4%</td>
+      <td>19.4%</td>
+      <td>58</td>
+      <td>22</td>
+      <td>차종 단위로 구형도 유지</td>
+    </tr>
+    <tr>
+      <td>카니발</td>
+      <td>RV</td>
+      <td>6</td>
+      <td>2026.0</td>
+      <td>281.0</td>
+      <td>73,120,107원</td>
+      <td>189.1%</td>
+      <td>13.9%</td>
+      <td>16.8%</td>
+      <td>58</td>
+      <td>22</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>GV80</td>
+      <td>SUV</td>
+      <td>2</td>
+      <td>2025.0</td>
+      <td>11.0</td>
+      <td>3,895,246원</td>
+      <td>156.5%</td>
+      <td>9.7%</td>
+      <td>80.7%</td>
+      <td>57</td>
+      <td>26</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>미니</td>
+      <td>IMPORTED</td>
+      <td>2</td>
+      <td>2025.0</td>
+      <td>27.0</td>
+      <td>4,609,878원</td>
+      <td>138.9%</td>
+      <td>17.9%</td>
+      <td>64.1%</td>
+      <td>56</td>
+      <td>27</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>K3</td>
+      <td>COMPACT</td>
+      <td>5</td>
+      <td>2024.0</td>
+      <td>81.0</td>
+      <td>8,748,984원</td>
+      <td>252.3%</td>
+      <td>9.9%</td>
+      <td>51.0%</td>
+      <td>51</td>
+      <td>27</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>K5</td>
+      <td>MIDSIZE</td>
+      <td>4</td>
+      <td>2026.0</td>
+      <td>155.0</td>
+      <td>16,344,949원</td>
+      <td>149.4%</td>
+      <td>10.1%</td>
+      <td>59.5%</td>
+      <td>50</td>
+      <td>38</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>벤츠</td>
+      <td>IMPORTED</td>
+      <td>3</td>
+      <td>2024.0</td>
+      <td>24.0</td>
+      <td>4,269,649원</td>
+      <td>260.7%</td>
+      <td>6.0%</td>
+      <td>49.8%</td>
+      <td>49</td>
+      <td>34</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>쏠라티</td>
+      <td>RV</td>
+      <td>4</td>
+      <td>2026.0</td>
+      <td>11.0</td>
+      <td>6,837,340원</td>
+      <td>110.2%</td>
+      <td>16.9%</td>
+      <td>32.2%</td>
+      <td>47</td>
+      <td>32</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>스타리아</td>
+      <td>RV</td>
+      <td>3</td>
+      <td>2026.0</td>
+      <td>46.0</td>
+      <td>10,326,881원</td>
+      <td>112.6%</td>
+      <td>16.9%</td>
+      <td>49.3%</td>
+      <td>46</td>
+      <td>39</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>G80</td>
+      <td>LUXURY</td>
+      <td>3</td>
+      <td>2025.0</td>
+      <td>20.0</td>
+      <td>4,205,180원</td>
+      <td>219.3%</td>
+      <td>9.6%</td>
+      <td>71.1%</td>
+      <td>45</td>
+      <td>38</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>아반떼</td>
+      <td>COMPACT</td>
+      <td>5</td>
+      <td>2026.0</td>
+      <td>214.0</td>
+      <td>28,913,668원</td>
+      <td>93.6%</td>
+      <td>14.1%</td>
+      <td>29.6%</td>
+      <td>40</td>
+      <td>47</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>쏘렌토</td>
+      <td>SUV</td>
+      <td>4</td>
+      <td>2024.0</td>
+      <td>34.0</td>
+      <td>7,303,192원</td>
+      <td>1068.7%</td>
+      <td>7.5%</td>
+      <td>69.8%</td>
+      <td>38</td>
+      <td>43</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>BMW 420i</td>
+      <td>IMPORTED</td>
+      <td>2</td>
+      <td>2026.0</td>
+      <td>24.0</td>
+      <td>7,253,233원</td>
+      <td>105.1%</td>
+      <td>17.0%</td>
+      <td>66.1%</td>
+      <td>37</td>
+      <td>60</td>
+      <td>차종 단위로 신형 쏠림</td>
+    </tr>
+    <tr>
+      <td>팰리세이드</td>
+      <td>SUV</td>
+      <td>2</td>
+      <td>2026.0</td>
+      <td>46.0</td>
+      <td>10,885,231원</td>
+      <td>77.6%</td>
+      <td>17.7%</td>
+      <td>64.7%</td>
+      <td>27</td>
+      <td>65</td>
+      <td>차종 단위로 신형 쏠림</td>
+    </tr>
+    <tr>
+      <td>쏘나타</td>
+      <td>MIDSIZE</td>
+      <td>2</td>
+      <td>2024.0</td>
+      <td>14.0</td>
+      <td>1,738,701원</td>
+      <td>67.7%</td>
+      <td>6.2%</td>
+      <td>87.6%</td>
+      <td>24</td>
+      <td>53</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>머스탱</td>
+      <td>IMPORTED</td>
+      <td>3</td>
+      <td>2024.0</td>
+      <td>11.0</td>
+      <td>2,251,257원</td>
+      <td>59.0%</td>
+      <td>3.6%</td>
+      <td>89.3%</td>
+      <td>18</td>
+      <td>59</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>K8</td>
+      <td>LUXURY</td>
+      <td>1</td>
+      <td>2023.0</td>
+      <td>1.0</td>
+      <td>156,750원</td>
+      <td>28.3%</td>
+      <td>7.2%</td>
+      <td>100.0%</td>
+      <td>16</td>
+      <td>62</td>
+      <td>차종 단위로 신형 쏠림</td>
+    </tr>
+    <tr>
+      <td>코나</td>
+      <td>SUV</td>
+      <td>1</td>
+      <td>2024.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>21.2%</td>
+      <td>8</td>
+      <td>68</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>베뉴</td>
+      <td>SUV</td>
+      <td>1</td>
+      <td>2022.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>100.0%</td>
+      <td>0</td>
+      <td>76</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>모닝</td>
+      <td>URBAN</td>
+      <td>1</td>
+      <td>2022.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>100.0%</td>
+      <td>0</td>
+      <td>78</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>싼타페</td>
+      <td>SUV</td>
+      <td>1</td>
+      <td>2024.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>-</td>
+      <td>0.0%</td>
+      <td>100.0%</td>
+      <td>0</td>
+      <td>80</td>
+      <td>차종 단위 추가 관찰</td>
+    </tr>
+    <tr>
+      <td>QM6</td>
+      <td>SUV</td>
+      <td>1</td>
+      <td>2021.0</td>
+      <td>0.0</td>
+      <td>0원</td>
+      <td>0.0%</td>
+      <td>0.0%</td>
+      <td>100.0%</td>
+      <td>0</td>
+      <td>86</td>
+      <td>차종 단위로 신형 쏠림</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>한계</h2>
+  <p class="note">분석 기간이 2025-01-01부터 2026-08-11까지라, 실제 신형 출시 직후의 전환 순간을 모두 관측하지는 못합니다.
+  또한 차종 묶음은 모델명 기반 규칙 추출입니다. BMW/벤츠/포르쉐처럼 세부 모델명이 다양한 그룹은 운영자가 최종 검토해야 합니다.</p>
+</body>
+</html>

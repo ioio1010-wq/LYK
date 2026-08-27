@@ -1,0 +1,64 @@
+{
+  "created_at_utc": "2026-08-18T06:20:39.549083+00:00",
+  "source": "ERP MySQL read-only, company.id=7 (제주로렌트카), queried 2026-08-18",
+  "linear_issue": "GNO-59",
+  "workbook": "LYK_Jejuro_vehicle_dataset_2026-08-18.xlsx",
+  "sheets": {
+    "00_README": {
+      "rows": 0,
+      "columns": 0
+    },
+    "01_vehicle_master": {
+      "rows": 3438,
+      "columns": 31
+    },
+    "02_daily_fleet_model": {
+      "rows": 141,
+      "columns": 12
+    },
+    "03_asset_lifecycle": {
+      "rows": 3438,
+      "columns": 17
+    },
+    "04_maintenance_vehicle": {
+      "rows": 3438,
+      "columns": 17
+    },
+    "05_maintenance_events": {
+      "rows": 15318,
+      "columns": 12
+    },
+    "06_reservation_vehicle": {
+      "rows": 80,
+      "columns": 18
+    },
+    "07_reservation_model": {
+      "rows": 300,
+      "columns": 19
+    },
+    "08_reservation_monthly": {
+      "rows": 10713,
+      "columns": 17
+    },
+    "09_data_dictionary": {
+      "rows": 153,
+      "columns": 8
+    },
+    "10_missing_requests": {
+      "rows": 9,
+      "columns": 6
+    },
+    "11_methodology": {
+      "rows": 21,
+      "columns": 4
+    }
+  },
+  "formulas": 11234,
+  "estimated_value_count": 0,
+  "current_vehicle_records": 912,
+  "historical_soft_deleted_vehicle_records": 2526,
+  "maintenance_events": 15318,
+  "vehicle_strong_join_reservations": 80,
+  "vehicle_reserved_fallback_excluded": 617964,
+  "pii_columns_included": 0
+}

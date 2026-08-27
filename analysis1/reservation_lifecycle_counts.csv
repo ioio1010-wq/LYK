@@ -1,0 +1,10 @@
+﻿reservation_lifecycle_status,reservations
+payment_pending,22074
+returned,2370
+refunded,664
+reserved,223
+partially_refunded,200
+cancelled,192
+in_use,20
+payment_failed,1
+paid,1

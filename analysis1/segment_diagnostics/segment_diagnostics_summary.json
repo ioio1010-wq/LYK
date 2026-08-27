@@ -1,0 +1,19 @@
+{
+  "analysis_users": 67638,
+  "analysis_reservations": 25745,
+  "price_q25_final_price_base": 14903.5,
+  "price_q75_final_price_base": 42345.0,
+  "min_users_for_test": 50,
+  "min_reservations_for_price": 30,
+  "dimensions": [
+    "source",
+    "medium",
+    "campaign",
+    "language",
+    "channel"
+  ],
+  "notes": [
+    "language=(unknown) is structurally biased because many customer_id-only reservation users have event_count=0.",
+    "price sensitivity compares paid rate in global low-price Q1 reservations vs high-price Q4 reservations."
+  ]
+}

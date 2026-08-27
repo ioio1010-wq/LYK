@@ -1,0 +1,5 @@
+﻿has_insurance_selected_event,has_reservation_insurance_row,canonical_users,reservation_users,paid_users,refunds,reservation_rate,paid_user_rate,paid_after_reservation_rate
+False,False,58052,99,2,0,0.0017053676014607594,3.4451870736580995e-05,0.020202020202020204
+True,False,16,16,0,1,1.0,0.0,0.0
+False,True,7945,7945,2345,596,1.0,0.29515418502202645,0.29515418502202645
+True,True,1625,1625,616,274,1.0,0.3790769230769231,0.3790769230769231

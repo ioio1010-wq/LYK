@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>제주로 렌터카 적정 보유기간 신호 분석</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 32px; color: #1f2933; }
+    h1 { font-size: 26px; margin-bottom: 6px; }
+    h2 { font-size: 18px; margin-top: 28px; border-bottom: 1px solid #d9e2ec; padding-bottom: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(160px, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric { border: 1px solid #d9e2ec; border-radius: 6px; padding: 12px; background: #f8fafc; }
+    .label { color: #52606d; font-size: 12px; }
+    .value { font-size: 20px; font-weight: 650; margin-top: 4px; }
+    .note { color: #52606d; font-size: 13px; line-height: 1.5; }
+    .insights { margin: 10px 0 0 18px; color: #334e68; font-size: 13px; line-height: 1.6; }
+    .dash { display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 16px; margin-top: 12px; }
+    .panel { border: 1px solid #d9e2ec; border-radius: 6px; padding: 14px; background: #ffffff; }
+    .panel-title { font-size: 13px; font-weight: 650; margin-bottom: 10px; color: #243b53; }
+    .bar-row { display: grid; grid-template-columns: minmax(120px, 1.25fr) minmax(140px, 2fr) 110px; gap: 10px; align-items: center; margin: 8px 0; }
+    .bar-label { font-size: 12px; color: #334e68; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 10px; background: #edf2f7; border-radius: 5px; overflow: hidden; }
+    .bar-fill { height: 100%; background: #2f80ed; border-radius: 5px; }
+    .bar-value { font-size: 12px; color: #243b53; text-align: right; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 10px; }
+    th, td { border: 1px solid #d9e2ec; padding: 6px 8px; text-align: right; }
+    th:first-child, td:first-child, th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) { text-align: left; }
+    th { background: #edf2f7; }
+    @media (max-width: 900px) {
+      .grid, .dash { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; gap: 4px; }
+      .bar-value { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <h1>제주로 렌터카 적정 보유기간 신호 분석</h1>
+  <div class="note">분석 기간: 2025-01-01 ~ 2026-08-11.
+  실제 매입일·매입가·매각일·매각가가 없어, 연식과 차량 등록일 기반 프록시로 매출 유지력을 봤습니다.</div>
+  <div class="grid">
+    <div class="metric"><div class="label">유효 예약</div><div class="value">35,944건</div></div>
+    <div class="metric"><div class="label">6년+ 연식 매출</div><div class="value">112,362,903원</div></div>
+    <div class="metric"><div class="label">6년+ 매출 비중</div><div class="value">2.2%</div></div>
+    <div class="metric"><div class="label">사용자 조인율</div><div class="value">82.5%</div></div>
+  </div>
+  <h2>결과 해석</h2>
+  <ul class="insights">
+    <li>이 데이터만으로 감가상각 곡선과 매출 감소 속도를 직접 비교할 수는 없습니다. 매입가·매각가가 모두 비어 있어, 이번 결과는 보유기간 의사결정의 “수요/매출 유지 신호”로 보는 것이 맞습니다.</li>
+    <li>보유일당 매출이 가장 높은 차령 구간은 0-1년입니다. 전체 평균만 보면 오래된 차량을 일괄 매각하기보다 차급과 차종별로 분리 판단해야 합니다.</li>
+    <li>6년 이상 연식에서도 수요가 유지되는 대표 후보는 20년 K5(LPG)입니다. 이 그룹은 실제 감가 데이터가 들어오면 “장기 보유” 후보로 우선 검증할 가치가 있습니다.</li>
+    <li>오래된 차량 예약 고객은 조인 가능한 사용자 기준으로 반복 예약 여부, 고가치 고객 비중, 평균 예약금액을 비교했습니다. 개인정보가 제거되어 성별·연령·지역 같은 고객 속성은 확인할 수 없습니다.</li>
+  </ul>
+  <h2>대시보드</h2>
+  <div class="dash">
+    <div class="panel"><div class="panel-title">차령 구간별 보유일당 매출</div><div class="bar-row"><div class="bar-label">0-1년</div><div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div><div class="bar-value">17,904원</div></div>
+<div class="bar-row"><div class="bar-label">2-3년</div><div class="bar-track"><div class="bar-fill" style="width:46.8%"></div></div><div class="bar-value">8,373원</div></div>
+<div class="bar-row"><div class="bar-label">4-5년</div><div class="bar-track"><div class="bar-fill" style="width:28.6%"></div></div><div class="bar-value">5,118원</div></div>
+<div class="bar-row"><div class="bar-label">6-7년</div><div class="bar-track"><div class="bar-fill" style="width:11.9%"></div></div><div class="bar-value">2,124원</div></div>
+<div class="bar-row"><div class="bar-label">8년+</div><div class="bar-track"><div class="bar-fill" style="width:6.9%"></div></div><div class="bar-value">1,228원</div></div></div>
+    <div class="panel"><div class="panel-title">6년+ 매출 상위 차종</div><div class="bar-row"><div class="bar-label">20년 K5(LPG)</div><div class="bar-track"><div class="bar-fill" style="width:78.1%"></div></div><div class="bar-value">6,520,221원</div></div>
+<div class="bar-row"><div class="bar-label">20년 올뉴k3(휘)</div><div class="bar-track"><div class="bar-fill" style="width:36.3%"></div></div><div class="bar-value">3,030,167원</div></div>
+<div class="bar-row"><div class="bar-label">20년 테슬라 모델3(전기)</div><div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div><div class="bar-value">8,346,207원</div></div>
+<div class="bar-row"><div class="bar-label">19년 올뉴K3(휘)</div><div class="bar-track"><div class="bar-fill" style="width:74.1%"></div></div><div class="bar-value">6,184,100원</div></div>
+<div class="bar-row"><div class="bar-label">20년 더 뉴 그랜저(LPG)</div><div class="bar-track"><div class="bar-fill" style="width:32.8%"></div></div><div class="bar-value">2,738,388원</div></div>
+<div class="bar-row"><div class="bar-label">20년 벤츠 C클래스 카브리올레(휘)</div><div class="bar-track"><div class="bar-fill" style="width:63.5%"></div></div><div class="bar-value">5,301,960원</div></div>
+<div class="bar-row"><div class="bar-label">20년 SM6(휘)</div><div class="bar-track"><div class="bar-fill" style="width:11.9%"></div></div><div class="bar-value">996,655원</div></div>
+<div class="bar-row"><div class="bar-label">19년 더뉴그랜드스타렉스12인(경유)</div><div class="bar-track"><div class="bar-fill" style="width:70.7%"></div></div><div class="bar-value">5,904,315원</div></div></div>
+    <div class="panel"><div class="panel-title">장기 보유 신호 점수 상위 차종</div><div class="bar-row"><div class="bar-label">20년 K5(LPG)</div><div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div><div class="bar-value">82점</div></div>
+<div class="bar-row"><div class="bar-label">20년 올뉴k3(휘)</div><div class="bar-track"><div class="bar-fill" style="width:94.3%"></div></div><div class="bar-value">77점</div></div>
+<div class="bar-row"><div class="bar-label">20년 테슬라 모델3(전기)</div><div class="bar-track"><div class="bar-fill" style="width:87.6%"></div></div><div class="bar-value">72점</div></div>
+<div class="bar-row"><div class="bar-label">19년 올뉴K3(휘)</div><div class="bar-track"><div class="bar-fill" style="width:86.8%"></div></div><div class="bar-value">71점</div></div>
+<div class="bar-row"><div class="bar-label">20년 더 뉴 그랜저(LPG)</div><div class="bar-track"><div class="bar-fill" style="width:75.6%"></div></div><div class="bar-value">62점</div></div>
+<div class="bar-row"><div class="bar-label">20년 벤츠 C클래스 카브리올레(휘)</div><div class="bar-track"><div class="bar-fill" style="width:70.5%"></div></div><div class="bar-value">58점</div></div>
+<div class="bar-row"><div class="bar-label">20년 SM6(휘)</div><div class="bar-track"><div class="bar-fill" style="width:70.5%"></div></div><div class="bar-value">58점</div></div>
+<div class="bar-row"><div class="bar-label">19년 더뉴그랜드스타렉스12인(경유)</div><div class="bar-track"><div class="bar-fill" style="width:66.4%"></div></div><div class="bar-value">54점</div></div></div>
+    <div class="panel"><div class="panel-title">6년+ 차급별 보유일당 매출</div><div class="bar-row"><div class="bar-label">IMPORTED</div><div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div><div class="bar-value">5,390원</div></div>
+<div class="bar-row"><div class="bar-label">EV</div><div class="bar-track"><div class="bar-fill" style="width:64.7%"></div></div><div class="bar-value">3,485원</div></div>
+<div class="bar-row"><div class="bar-label">LUXURY</div><div class="bar-track"><div class="bar-fill" style="width:49.2%"></div></div><div class="bar-value">2,653원</div></div>
+<div class="bar-row"><div class="bar-label">RV</div><div class="bar-track"><div class="bar-fill" style="width:40.7%"></div></div><div class="bar-value">2,195원</div></div>
+<div class="bar-row"><div class="bar-label">MIDSIZE</div><div class="bar-track"><div class="bar-fill" style="width:25.4%"></div></div><div class="bar-value">1,371원</div></div>
+<div class="bar-row"><div class="bar-label">COMPACT</div><div class="bar-track"><div class="bar-fill" style="width:17.5%"></div></div><div class="bar-value">945원</div></div>
+<div class="bar-row"><div class="bar-label">SUV</div><div class="bar-track"><div class="bar-fill" style="width:9.5%"></div></div><div class="bar-value">511원</div></div>
+<div class="bar-row"><div class="bar-label">URBAN</div><div class="bar-track"><div class="bar-fill" style="width:1.6%"></div></div><div class="bar-value">84원</div></div></div>
+  </div>
+  <h2>분석 과정</h2>
+  <p class="note">1) 예약에서 취소/삭제 건을 제외하고 모델명, 연식, 차급, 매출을 붙였습니다.
+  2) 모델명에서 연식을 추출해 예약 시점의 차령을 계산했습니다. 예: 20년 모델이 2026년에 예약되면 약 6년차로 봅니다.
+  3) 차량 등록 데이터로 일자별 보유 차량 수를 펼치고, 예약 시간을 일자별 매출로 배분했습니다.
+  4) 차령 구간별 보유일당 매출, 가동률, 예약 수를 계산했습니다.
+  5) 6년 이상 연식에서도 예약·매출·가동률이 차급 중앙값 이상으로 유지되는 차종에 장기 보유 신호를 부여했습니다.
+  6) 차급별로 보유일당 매출과 가동률이 신차급 대비 50% 미만으로 동시에 하락하는 첫 차령 구간을 교체 검토 시작 구간으로 표시했습니다.</p>
+  <h2>적정 보유기간 신호</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model_name</th>
+      <th>vehicle_class</th>
+      <th>model_year_latest</th>
+      <th>last_observed_age_years</th>
+      <th>reservation_count</th>
+      <th>revenue_krw</th>
+      <th>revenue_per_fleet_day</th>
+      <th>utilization_rate</th>
+      <th>old_reservation_count</th>
+      <th>old_revenue_krw</th>
+      <th>old_revenue_per_fleet_day</th>
+      <th>old_utilization_rate</th>
+      <th>old_revenue_share</th>
+      <th>long_hold_score</th>
+      <th>holding_period_signal</th>
+      <th>recommended_holding_period_proxy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>20년 K5(LPG)</td>
+      <td>MIDSIZE</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>177.0</td>
+      <td>14,954,926원</td>
+      <td>3,179원</td>
+      <td>9.4%</td>
+      <td>87.0</td>
+      <td>6,520,221원</td>
+      <td>3,655원</td>
+      <td>12.0%</td>
+      <td>43.6%</td>
+      <td>82</td>
+      <td>길게 보유 검토</td>
+      <td>6년+ 장기 보유 검증</td>
+    </tr>
+    <tr>
+      <td>20년 올뉴k3(휘)</td>
+      <td>COMPACT</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>108.0</td>
+      <td>7,451,725원</td>
+      <td>1,267원</td>
+      <td>4.7%</td>
+      <td>39.0</td>
+      <td>3,030,167원</td>
+      <td>1,359원</td>
+      <td>5.4%</td>
+      <td>40.7%</td>
+      <td>77</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>20년 테슬라 모델3(전기)</td>
+      <td>IMPORTED</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>190.0</td>
+      <td>26,180,921원</td>
+      <td>8,905원</td>
+      <td>13.2%</td>
+      <td>67.0</td>
+      <td>8,346,207원</td>
+      <td>7,485원</td>
+      <td>12.7%</td>
+      <td>31.9%</td>
+      <td>72</td>
+      <td>길게 보유 검토</td>
+      <td>6년+ 장기 보유 검증</td>
+    </tr>
+    <tr>
+      <td>19년 올뉴K3(휘)</td>
+      <td>COMPACT</td>
+      <td>2019.0</td>
+      <td>7.608487</td>
+      <td>71.0</td>
+      <td>6,184,100원</td>
+      <td>1,078원</td>
+      <td>3.2%</td>
+      <td>71.0</td>
+      <td>6,184,100원</td>
+      <td>1,078원</td>
+      <td>3.2%</td>
+      <td>100.0%</td>
+      <td>71</td>
+      <td>길게 보유 검토</td>
+      <td>6년+ 장기 보유 검증</td>
+    </tr>
+    <tr>
+      <td>20년 더 뉴 그랜저(LPG)</td>
+      <td>LUXURY</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>70.0</td>
+      <td>8,642,520원</td>
+      <td>4,899원</td>
+      <td>9.4%</td>
+      <td>20.0</td>
+      <td>2,738,388원</td>
+      <td>4,093원</td>
+      <td>8.2%</td>
+      <td>31.7%</td>
+      <td>62</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>20년 벤츠 C클래스 카브리올레(휘)</td>
+      <td>IMPORTED</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>110.0</td>
+      <td>20,109,180원</td>
+      <td>8,550원</td>
+      <td>9.6%</td>
+      <td>31.0</td>
+      <td>5,301,960원</td>
+      <td>5,944원</td>
+      <td>7.1%</td>
+      <td>26.4%</td>
+      <td>58</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>20년 SM6(휘)</td>
+      <td>MIDSIZE</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>30.0</td>
+      <td>2,251,885원</td>
+      <td>1,915원</td>
+      <td>6.6%</td>
+      <td>13.0</td>
+      <td>996,655원</td>
+      <td>2,235원</td>
+      <td>7.5%</td>
+      <td>44.3%</td>
+      <td>58</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>19년 더뉴그랜드스타렉스12인(경유)</td>
+      <td>RV</td>
+      <td>2019.0</td>
+      <td>7.608487</td>
+      <td>35.0</td>
+      <td>5,904,315원</td>
+      <td>5,021원</td>
+      <td>7.1%</td>
+      <td>35.0</td>
+      <td>5,904,315원</td>
+      <td>5,021원</td>
+      <td>7.1%</td>
+      <td>100.0%</td>
+      <td>54</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>20년 더 뉴 그랜저(휘)</td>
+      <td>LUXURY</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>112.0</td>
+      <td>14,977,100원</td>
+      <td>6,368원</td>
+      <td>11.8%</td>
+      <td>23.0</td>
+      <td>3,223,202원</td>
+      <td>3,613원</td>
+      <td>6.2%</td>
+      <td>21.5%</td>
+      <td>53</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>20년 쏘나타DN8(LPG)</td>
+      <td>MIDSIZE</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>684.0</td>
+      <td>54,336,310원</td>
+      <td>6,601원</td>
+      <td>18.9%</td>
+      <td>68.0</td>
+      <td>5,489,560원</td>
+      <td>1,758원</td>
+      <td>5.9%</td>
+      <td>10.1%</td>
+      <td>52</td>
+      <td>길게 보유 검토</td>
+      <td>6년+ 장기 보유 검증</td>
+    </tr>
+    <tr>
+      <td>18/19년 쏠라티(15인/경유)</td>
+      <td>RV</td>
+      <td>2019.0</td>
+      <td>7.608487</td>
+      <td>20.0</td>
+      <td>8,667,830원</td>
+      <td>4,914원</td>
+      <td>2.7%</td>
+      <td>20.0</td>
+      <td>8,667,830원</td>
+      <td>4,914원</td>
+      <td>2.7%</td>
+      <td>100.0%</td>
+      <td>51</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>19년 엑센트(휘)</td>
+      <td>URBAN</td>
+      <td>2019.0</td>
+      <td>6.266940</td>
+      <td>1.0</td>
+      <td>22,000원</td>
+      <td>224원</td>
+      <td>0.3%</td>
+      <td>1.0</td>
+      <td>22,000원</td>
+      <td>224원</td>
+      <td>0.3%</td>
+      <td>100.0%</td>
+      <td>50</td>
+      <td>교체/매각 검토</td>
+      <td>6년 전후 교체 검토</td>
+    </tr>
+    <tr>
+      <td>19년 더뉴카니발리무진7인(경유)</td>
+      <td>RV</td>
+      <td>2019.0</td>
+      <td>7.608487</td>
+      <td>55.0</td>
+      <td>10,259,510원</td>
+      <td>3,490원</td>
+      <td>5.0%</td>
+      <td>55.0</td>
+      <td>10,259,510원</td>
+      <td>3,490원</td>
+      <td>5.0%</td>
+      <td>100.0%</td>
+      <td>44</td>
+      <td>길게 보유 검토</td>
+      <td>6년+ 장기 보유 검증</td>
+    </tr>
+    <tr>
+      <td>20년 코나(전기)</td>
+      <td>EV</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>754.0</td>
+      <td>70,310,414원</td>
+      <td>3,416원</td>
+      <td>9.5%</td>
+      <td>272.0</td>
+      <td>27,200,454원</td>
+      <td>3,485원</td>
+      <td>9.3%</td>
+      <td>38.7%</td>
+      <td>41</td>
+      <td>길게 보유 검토</td>
+      <td>6년+ 장기 보유 검증</td>
+    </tr>
+    <tr>
+      <td>20년 올뉴아반떼CN7(휘)</td>
+      <td>COMPACT</td>
+      <td>2020.0</td>
+      <td>6.609172</td>
+      <td>65.0</td>
+      <td>4,731,160원</td>
+      <td>1,609원</td>
+      <td>5.1%</td>
+      <td>12.0</td>
+      <td>618,820원</td>
+      <td>555원</td>
+      <td>2.3%</td>
+      <td>13.1%</td>
+      <td>37</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>19년 더뉴카니발하이리무진7인(경유)</td>
+      <td>RV</td>
+      <td>2019.0</td>
+      <td>7.208761</td>
+      <td>20.0</td>
+      <td>5,396,580원</td>
+      <td>3,064원</td>
+      <td>3.5%</td>
+      <td>20.0</td>
+      <td>5,396,580원</td>
+      <td>3,064원</td>
+      <td>3.5%</td>
+      <td>100.0%</td>
+      <td>34</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>18년 올뉴카니발리무진7인(경유)</td>
+      <td>RV</td>
+      <td>2018.0</td>
+      <td>8.607803</td>
+      <td>37.0</td>
+      <td>7,524,825원</td>
+      <td>1,828원</td>
+      <td>2.6%</td>
+      <td>37.0</td>
+      <td>7,524,825원</td>
+      <td>1,828원</td>
+      <td>2.6%</td>
+      <td>100.0%</td>
+      <td>31</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+    <tr>
+      <td>18년 뉴레이(휘)</td>
+      <td>URBAN</td>
+      <td>2018.0</td>
+      <td>7.266256</td>
+      <td>5.0</td>
+      <td>209,370원</td>
+      <td>97원</td>
+      <td>0.5%</td>
+      <td>5.0</td>
+      <td>209,370원</td>
+      <td>97원</td>
+      <td>0.5%</td>
+      <td>100.0%</td>
+      <td>27</td>
+      <td>교체/매각 검토</td>
+      <td>6년 전후 교체 검토</td>
+    </tr>
+    <tr>
+      <td>19년 쏘울 부스터(휘)</td>
+      <td>COMPACT</td>
+      <td>2019.0</td>
+      <td>6.266940</td>
+      <td>2.0</td>
+      <td>159,800원</td>
+      <td>408원</td>
+      <td>0.5%</td>
+      <td>2.0</td>
+      <td>159,800원</td>
+      <td>408원</td>
+      <td>0.5%</td>
+      <td>100.0%</td>
+      <td>25</td>
+      <td>교체/매각 검토</td>
+      <td>6년 전후 교체 검토</td>
+    </tr>
+    <tr>
+      <td>16/18년 올뉴카니발9인(경유)</td>
+      <td>RV</td>
+      <td>2018.0</td>
+      <td>8.607803</td>
+      <td>14.0</td>
+      <td>1,855,555원</td>
+      <td>1,578원</td>
+      <td>3.4%</td>
+      <td>14.0</td>
+      <td>1,855,555원</td>
+      <td>1,578원</td>
+      <td>3.4%</td>
+      <td>100.0%</td>
+      <td>24</td>
+      <td>추가 관찰</td>
+      <td>4-6년 구간 모니터링</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>차급별 교체 검토 구간</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>vehicle_class</th>
+      <th>baseline_0_1_revenue_per_fleet_day</th>
+      <th>baseline_0_1_utilization_rate</th>
+      <th>replacement_review_start_age_bucket</th>
+      <th>old_age_revenue_per_fleet_day</th>
+      <th>old_age_utilization_rate</th>
+      <th>recommendation_reason</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>RV</td>
+      <td>20,068원</td>
+      <td>21.2%</td>
+      <td>2-3년</td>
+      <td>2,195원</td>
+      <td>3.1%</td>
+      <td>보유일당 매출과 가동률이 신차급 대비 50% 미만으로 동시 하락</td>
+    </tr>
+    <tr>
+      <td>SUV</td>
+      <td>19,293원</td>
+      <td>29.5%</td>
+      <td>2-3년</td>
+      <td>511원</td>
+      <td>1.2%</td>
+      <td>보유일당 매출과 가동률이 신차급 대비 50% 미만으로 동시 하락</td>
+    </tr>
+    <tr>
+      <td>URBAN</td>
+      <td>10,424원</td>
+      <td>32.8%</td>
+      <td>2-3년</td>
+      <td>84원</td>
+      <td>0.4%</td>
+      <td>보유일당 매출과 가동률이 신차급 대비 50% 미만으로 동시 하락</td>
+    </tr>
+    <tr>
+      <td>COMPACT</td>
+      <td>13,429원</td>
+      <td>31.3%</td>
+      <td>4-5년</td>
+      <td>945원</td>
+      <td>3.1%</td>
+      <td>보유일당 매출과 가동률이 신차급 대비 50% 미만으로 동시 하락</td>
+    </tr>
+    <tr>
+      <td>LUXURY</td>
+      <td>23,163원</td>
+      <td>27.9%</td>
+      <td>4-5년</td>
+      <td>2,653원</td>
+      <td>4.9%</td>
+      <td>보유일당 매출과 가동률이 신차급 대비 50% 미만으로 동시 하락</td>
+    </tr>
+    <tr>
+      <td>MIDSIZE</td>
+      <td>13,863원</td>
+      <td>30.7%</td>
+      <td>4-5년</td>
+      <td>1,371원</td>
+      <td>4.5%</td>
+      <td>보유일당 매출과 가동률이 신차급 대비 50% 미만으로 동시 하락</td>
+    </tr>
+    <tr>
+      <td>EV</td>
+      <td>13,362원</td>
+      <td>21.2%</td>
+      <td>6-7년</td>
+      <td>3,485원</td>
+      <td>9.3%</td>
+      <td>보유일당 매출과 가동률이 신차급 대비 50% 미만으로 동시 하락</td>
+    </tr>
+    <tr>
+      <td>IMPORTED</td>
+      <td>23,681원</td>
+      <td>22.4%</td>
+      <td>6-7년</td>
+      <td>5,390원</td>
+      <td>8.1%</td>
+      <td>보유일당 매출과 가동률이 신차급 대비 50% 미만으로 동시 하락</td>
+    </tr>
+    <tr>
+      <td>SUPERCAR</td>
+      <td>28,112원</td>
+      <td>6.9%</td>
+      <td>8년+까지 추가 관찰</td>
+      <td>-</td>
+      <td>-</td>
+      <td>신차급 대비 매출/가동률이 동시에 50% 미만으로 하락한 충분한 구간 없음</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>차급별 차령 비교</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>vehicle_class</th>
+      <th>age_bucket</th>
+      <th>fleet_vehicle_days</th>
+      <th>booked_vehicle_days</th>
+      <th>revenue_krw</th>
+      <th>revenue_per_fleet_day</th>
+      <th>utilization_rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>COMPACT</td>
+      <td>0-1년</td>
+      <td>18940</td>
+      <td>5936.847917</td>
+      <td>254,352,638원</td>
+      <td>13,429원</td>
+      <td>31.3%</td>
+    </tr>
+    <tr>
+      <td>COMPACT</td>
+      <td>2-3년</td>
+      <td>14053</td>
+      <td>2769.068750</td>
+      <td>98,138,255원</td>
+      <td>6,983원</td>
+      <td>19.7%</td>
+    </tr>
+    <tr>
+      <td>COMPACT</td>
+      <td>4-5년</td>
+      <td>24858</td>
+      <td>2851.388889</td>
+      <td>85,591,307원</td>
+      <td>3,443원</td>
+      <td>11.5%</td>
+    </tr>
+    <tr>
+      <td>COMPACT</td>
+      <td>6-7년</td>
+      <td>10647</td>
+      <td>332.890278</td>
+      <td>10,063,947원</td>
+      <td>945원</td>
+      <td>3.1%</td>
+    </tr>
+    <tr>
+      <td>EV</td>
+      <td>0-1년</td>
+      <td>6174</td>
+      <td>1308.820833</td>
+      <td>82,498,234원</td>
+      <td>13,362원</td>
+      <td>21.2%</td>
+    </tr>
+    <tr>
+      <td>EV</td>
+      <td>2-3년</td>
+      <td>7665</td>
+      <td>1499.102083</td>
+      <td>72,624,283원</td>
+      <td>9,475원</td>
+      <td>19.6%</td>
+    </tr>
+    <tr>
+      <td>EV</td>
+      <td>4-5년</td>
+      <td>23338</td>
+      <td>3189.048611</td>
+      <td>133,720,643원</td>
+      <td>5,730원</td>
+      <td>13.7%</td>
+    </tr>
+    <tr>
+      <td>EV</td>
+      <td>6-7년</td>
+      <td>7805</td>
+      <td>723.047222</td>
+      <td>27,200,454원</td>
+      <td>3,485원</td>
+      <td>9.3%</td>
+    </tr>
+    <tr>
+      <td>IMPORTED</td>
+      <td>0-1년</td>
+      <td>16257</td>
+      <td>3636.086111</td>
+      <td>384,980,069원</td>
+      <td>23,681원</td>
+      <td>22.4%</td>
+    </tr>
+    <tr>
+      <td>IMPORTED</td>
+      <td>2-3년</td>
+      <td>14061</td>
+      <td>2195.276389</td>
+      <td>217,149,466원</td>
+      <td>15,443원</td>
+      <td>15.6%</td>
+    </tr>
+    <tr>
+      <td>IMPORTED</td>
+      <td>4-5년</td>
+      <td>10738</td>
+      <td>1315.323611</td>
+      <td>115,465,312원</td>
+      <td>10,753원</td>
+      <td>12.2%</td>
+    </tr>
+    <tr>
+      <td>IMPORTED</td>
+      <td>6-7년</td>
+      <td>2532</td>
+      <td>205.326389</td>
+      <td>13,648,167원</td>
+      <td>5,390원</td>
+      <td>8.1%</td>
+    </tr>
+    <tr>
+      <td>LUXURY</td>
+      <td>0-1년</td>
+      <td>7520</td>
+      <td>2094.557639</td>
+      <td>174,185,109원</td>
+      <td>23,163원</td>
+      <td>27.9%</td>
+    </tr>
+    <tr>
+      <td>LUXURY</td>
+      <td>2-3년</td>
+      <td>6488</td>
+      <td>1061.372917</td>
+      <td>66,198,156원</td>
+      <td>10,203원</td>
+      <td>16.4%</td>
+    </tr>
+    <tr>
+      <td>LUXURY</td>
+      <td>4-5년</td>
+      <td>5299</td>
+      <td>587.141667</td>
+      <td>34,355,604원</td>
+      <td>6,483원</td>
+      <td>11.1%</td>
+    </tr>
+    <tr>
+      <td>LUXURY</td>
+      <td>6-7년</td>
+      <td>2247</td>
+      <td>109.850694</td>
+      <td>5,961,590원</td>
+      <td>2,653원</td>
+      <td>4.9%</td>
+    </tr>
+    <tr>
+      <td>MIDSIZE</td>
+      <td>0-1년</td>
+      <td>18629</td>
+      <td>5718.816667</td>
+      <td>258,263,009원</td>
+      <td>13,863원</td>
+      <td>30.7%</td>
+    </tr>
+    <tr>
+      <td>MIDSIZE</td>
+      <td>2-3년</td>
+      <td>14679</td>
+      <td>3068.604167</td>
+      <td>117,097,571원</td>
+      <td>7,977원</td>
+      <td>20.9%</td>
+    </tr>
+    <tr>
+      <td>MIDSIZE</td>
+      <td>4-5년</td>
+      <td>31459</td>
+      <td>3042.844444</td>
+      <td>108,143,395원</td>
+      <td>3,438원</td>
+      <td>9.7%</td>
+    </tr>
+    <tr>
+      <td>MIDSIZE</td>
+      <td>6-7년</td>
+      <td>10258</td>
+      <td>458.481944</td>
+      <td>14,067,491원</td>
+      <td>1,371원</td>
+      <td>4.5%</td>
+    </tr>
+    <tr>
+      <td>RV</td>
+      <td>0-1년</td>
+      <td>32926</td>
+      <td>6982.512500</td>
+      <td>660,754,875원</td>
+      <td>20,068원</td>
+      <td>21.2%</td>
+    </tr>
+    <tr>
+      <td>RV</td>
+      <td>2-3년</td>
+      <td>44829</td>
+      <td>4068.280556</td>
+      <td>331,988,618원</td>
+      <td>7,406원</td>
+      <td>9.1%</td>
+    </tr>
+    <tr>
+      <td>RV</td>
+      <td>4-5년</td>
+      <td>5110</td>
+      <td>222.241667</td>
+      <td>15,784,040원</td>
+      <td>3,089원</td>
+      <td>4.3%</td>
+    </tr>
+    <tr>
+      <td>RV</td>
+      <td>6-7년</td>
+      <td>11869</td>
+      <td>441.208333</td>
+      <td>37,522,575원</td>
+      <td>3,161원</td>
+      <td>3.7%</td>
+    </tr>
+    <tr>
+      <td>RV</td>
+      <td>8년+</td>
+      <td>1784</td>
+      <td>45.725694</td>
+      <td>2,191,340원</td>
+      <td>1,228원</td>
+      <td>2.6%</td>
+    </tr>
+    <tr>
+      <td>SUPERCAR</td>
+      <td>0-1년</td>
+      <td>1133</td>
+      <td>78.437500</td>
+      <td>31,850,855원</td>
+      <td>28,112원</td>
+      <td>6.9%</td>
+    </tr>
+    <tr>
+      <td>SUPERCAR</td>
+      <td>2-3년</td>
+      <td>463</td>
+      <td>45.791667</td>
+      <td>20,183,740원</td>
+      <td>43,593원</td>
+      <td>9.9%</td>
+    </tr>
+    <tr>
+      <td>SUPERCAR</td>
+      <td>4-5년</td>
+      <td>811</td>
+      <td>125.949306</td>
+      <td>54,941,906원</td>
+      <td>67,746원</td>
+      <td>15.5%</td>
+    </tr>
+    <tr>
+      <td>SUV</td>
+      <td>0-1년</td>
+      <td>55216</td>
+      <td>16305.689583</td>
+      <td>1,065,272,578원</td>
+      <td>19,293원</td>
+      <td>29.5%</td>
+    </tr>
+    <tr>
+      <td>SUV</td>
+      <td>2-3년</td>
+      <td>48284</td>
+      <td>6791.457639</td>
+      <td>378,409,225원</td>
+      <td>7,837원</td>
+      <td>14.1%</td>
+    </tr>
+    <tr>
+      <td>SUV</td>
+      <td>4-5년</td>
+      <td>23093</td>
+      <td>1817.786111</td>
+      <td>93,723,905원</td>
+      <td>4,059원</td>
+      <td>7.9%</td>
+    </tr>
+    <tr>
+      <td>SUV</td>
+      <td>6-7년</td>
+      <td>4050</td>
+      <td>48.631944</td>
+      <td>2,070,694원</td>
+      <td>511원</td>
+      <td>1.2%</td>
+    </tr>
+    <tr>
+      <td>URBAN</td>
+      <td>0-1년</td>
+      <td>14014</td>
+      <td>4591.296528</td>
+      <td>146,077,777원</td>
+      <td>10,424원</td>
+      <td>32.8%</td>
+    </tr>
+    <tr>
+      <td>URBAN</td>
+      <td>2-3년</td>
+      <td>10914</td>
+      <td>1708.036111</td>
+      <td>49,887,848원</td>
+      <td>4,571원</td>
+      <td>15.6%</td>
+    </tr>
+    <tr>
+      <td>URBAN</td>
+      <td>4-5년</td>
+      <td>5575</td>
+      <td>884.175000</td>
+      <td>25,025,956원</td>
+      <td>4,489원</td>
+      <td>15.9%</td>
+    </tr>
+    <tr>
+      <td>URBAN</td>
+      <td>6-7년</td>
+      <td>2744</td>
+      <td>11.815972</td>
+      <td>231,370원</td>
+      <td>84원</td>
+      <td>0.4%</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>같은 차종 내 연식 비교</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model_family</th>
+      <th>vehicle_class</th>
+      <th>model_year_latest</th>
+      <th>reservation_count</th>
+      <th>revenue_krw</th>
+      <th>revenue_per_fleet_day</th>
+      <th>utilization_rate</th>
+      <th>family_year_rank_by_revenue_per_fleet_day</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>벤츠</td>
+      <td>SUPERCAR</td>
+      <td>2021.0</td>
+      <td>48.0</td>
+      <td>39,691,710원</td>
+      <td>67,503원</td>
+      <td>13.9%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>포르쉐</td>
+      <td>SUPERCAR</td>
+      <td>2022.0</td>
+      <td>56.0</td>
+      <td>35,433,936원</td>
+      <td>51,653원</td>
+      <td>13.2%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>포르쉐</td>
+      <td>SUPERCAR</td>
+      <td>2025.0</td>
+      <td>26.0</td>
+      <td>22,495,395원</td>
+      <td>49,224원</td>
+      <td>12.4%</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <td>쏠라티</td>
+      <td>RV</td>
+      <td>2026.0</td>
+      <td>18.0</td>
+      <td>10,718,395원</td>
+      <td>44,847원</td>
+      <td>15.3%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>BMW 420i</td>
+      <td>IMPORTED</td>
+      <td>2026.0</td>
+      <td>232.0</td>
+      <td>56,634,985원</td>
+      <td>36,968원</td>
+      <td>28.0%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>G80</td>
+      <td>LUXURY</td>
+      <td>2025.0</td>
+      <td>453.0</td>
+      <td>91,658,472원</td>
+      <td>31,771원</td>
+      <td>35.4%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>GV80</td>
+      <td>SUV</td>
+      <td>2025.0</td>
+      <td>500.0</td>
+      <td>121,634,574원</td>
+      <td>30,990원</td>
+      <td>28.6%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>카니발</td>
+      <td>RV</td>
+      <td>2026.0</td>
+      <td>221.0</td>
+      <td>56,379,290원</td>
+      <td>30,508원</td>
+      <td>30.2%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>머스탱</td>
+      <td>IMPORTED</td>
+      <td>2024.0</td>
+      <td>620.0</td>
+      <td>142,838,476원</td>
+      <td>30,365원</td>
+      <td>27.6%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>벤츠</td>
+      <td>IMPORTED</td>
+      <td>2024.0</td>
+      <td>271.0</td>
+      <td>72,085,195원</td>
+      <td>29,423원</td>
+      <td>22.1%</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <td>스타리아</td>
+      <td>RV</td>
+      <td>2026.0</td>
+      <td>99.0</td>
+      <td>24,223,296원</td>
+      <td>26,532원</td>
+      <td>24.8%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>GV70</td>
+      <td>SUV</td>
+      <td>2025.0</td>
+      <td>318.0</td>
+      <td>68,045,490원</td>
+      <td>25,853원</td>
+      <td>28.2%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>투싼</td>
+      <td>SUV</td>
+      <td>2026.0</td>
+      <td>164.0</td>
+      <td>23,616,856원</td>
+      <td>25,449원</td>
+      <td>40.3%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>팰리세이드</td>
+      <td>SUV</td>
+      <td>2025.0</td>
+      <td>466.0</td>
+      <td>98,381,405원</td>
+      <td>25,349원</td>
+      <td>29.1%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>카니발</td>
+      <td>RV</td>
+      <td>2025.0</td>
+      <td>1269.0</td>
+      <td>291,098,139원</td>
+      <td>24,497원</td>
+      <td>27.0%</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <td>BMW 420i</td>
+      <td>IMPORTED</td>
+      <td>2024.0</td>
+      <td>277.0</td>
+      <td>67,992,224원</td>
+      <td>23,127원</td>
+      <td>20.1%</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <td>BMW X7 xdrive40i 하이브리드</td>
+      <td>SUPERCAR</td>
+      <td>2025.0</td>
+      <td>10.0</td>
+      <td>9,355,460원</td>
+      <td>22,328원</td>
+      <td>5.2%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>쏠라티</td>
+      <td>RV</td>
+      <td>2025.0</td>
+      <td>97.0</td>
+      <td>52,167,620원</td>
+      <td>22,218원</td>
+      <td>9.8%</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <td>테슬라 모델Y RWD</td>
+      <td>IMPORTED</td>
+      <td>2026.0</td>
+      <td>64.0</td>
+      <td>15,506,008원</td>
+      <td>21,901원</td>
+      <td>19.5%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>투싼</td>
+      <td>SUV</td>
+      <td>2025.0</td>
+      <td>1384.0</td>
+      <td>190,331,222원</td>
+      <td>21,745원</td>
+      <td>37.2%</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <td>벤츠</td>
+      <td>IMPORTED</td>
+      <td>2021.0</td>
+      <td>120.0</td>
+      <td>24,722,390원</td>
+      <td>21,022원</td>
+      <td>22.1%</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <td>스포티지</td>
+      <td>SUV</td>
+      <td>2025.0</td>
+      <td>972.0</td>
+      <td>143,315,191원</td>
+      <td>19,621원</td>
+      <td>32.9%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>쏠라티</td>
+      <td>RV</td>
+      <td>2024.0</td>
+      <td>26.0</td>
+      <td>11,393,735원</td>
+      <td>19,377원</td>
+      <td>8.7%</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <td>팰리세이드</td>
+      <td>SUV</td>
+      <td>2026.0</td>
+      <td>319.0</td>
+      <td>53,166,278원</td>
+      <td>19,319원</td>
+      <td>28.1%</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <td>그랜저 GN7</td>
+      <td>LUXURY</td>
+      <td>2026.0</td>
+      <td>95.0</td>
+      <td>17,679,938원</td>
+      <td>19,072원</td>
+      <td>23.4%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>더 K8</td>
+      <td>LUXURY</td>
+      <td>2026.0</td>
+      <td>81.0</td>
+      <td>14,982,629원</td>
+      <td>19,013원</td>
+      <td>26.3%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>스포티지</td>
+      <td>SUV</td>
+      <td>2026.0</td>
+      <td>265.0</td>
+      <td>35,993,725원</td>
+      <td>17,592원</td>
+      <td>29.2%</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <td>미니</td>
+      <td>IMPORTED</td>
+      <td>2025.0</td>
+      <td>514.0</td>
+      <td>96,226,001원</td>
+      <td>17,585원</td>
+      <td>20.6%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>BMW Z4 로드스터</td>
+      <td>IMPORTED</td>
+      <td>2021.0</td>
+      <td>109.0</td>
+      <td>20,578,019원</td>
+      <td>17,498원</td>
+      <td>17.5%</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>아반떼</td>
+      <td>COMPACT</td>
+      <td>2025.0</td>
+      <td>1152.0</td>
+      <td>121,845,863원</td>
+      <td>17,377원</td>
+      <td>36.7%</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>오래된 차량 예약 고객 프로필</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>age_segment</th>
+      <th>joined_reservations</th>
+      <th>unique_users</th>
+      <th>repeat_user_share</th>
+      <th>returned_repeat_user_share</th>
+      <th>high_value_user_share</th>
+      <th>marketing_agreed_share</th>
+      <th>avg_user_linked_reservations</th>
+      <th>avg_user_total_spend_krw</th>
+      <th>avg_rental_hours</th>
+      <th>avg_reservation_price_krw</th>
+      <th>full_coverage_share</th>
+      <th>avg_discount_krw</th>
+      <th>avg_loyalty_mileage_used</th>
+      <th>user_join_scope</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0-5년 비교군</td>
+      <td>28868</td>
+      <td>24569</td>
+      <td>30.2%</td>
+      <td>23.7%</td>
+      <td>25.1%</td>
+      <td>51.9%</td>
+      <td>2.075724</td>
+      <td>284,538원</td>
+      <td>59.266231</td>
+      <td>150,896원</td>
+      <td>3.1%</td>
+      <td>9,014원</td>
+      <td>1.732022</td>
+      <td>reservation_key joined to user_key only</td>
+    </tr>
+    <tr>
+      <td>6년+ 오래된 연식</td>
+      <td>787</td>
+      <td>746</td>
+      <td>31.5%</td>
+      <td>26.2%</td>
+      <td>21.9%</td>
+      <td>47.3%</td>
+      <td>2.363405</td>
+      <td>266,836원</td>
+      <td>63.304930</td>
+      <td>127,511원</td>
+      <td>3.3%</td>
+      <td>7,260원</td>
+      <td>0.000000</td>
+      <td>reservation_key joined to user_key only</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>데이터 한계</h2>
+  <p class="note">차량 데이터셋의 취득일, 매입가, 매각일, 매각가는 모두 unavailable입니다.
+  따라서 실제 적정 보유기간은 이번 리포트의 장기 보유 신호에 차량별 감가상각과 정비비 전망을 추가해야 확정할 수 있습니다.
+  또한 예약은 차량 개별 ID가 아니라 모델 단위로 연결되어 있어, 대부분의 분석은 모델/차급 단위 프록시입니다.</p>
+</body>
+</html>

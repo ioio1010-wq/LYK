@@ -1,0 +1,10 @@
+﻿requested_field,availability,reason,request_from,do_not_substitute,priority
+vehicle acquisition date,unavailable,No acquisition/purchase date column found in fresh ERP schema discovery.,Jejuro asset ledger / purchase contract,vehicle.registered_at or vehicle.created_at,high
+vehicle purchase price,unavailable,No vehicle-level purchase price column found.,Jejuro fixed-asset ledger,vehicle_model.release_price (model-level release/list price),high
+vehicle sale/disposal date,unavailable,No verified sale/disposal date column found.,Jejuro disposal/sale ledger,vehicle.deleted_at,high
+vehicle sale price,unavailable,No sale price column found.,Jejuro vehicle sale ledger,none,high
+holding period,unavailable,Cannot derive without verified acquisition date and sale/disposal date or explicit analysis cutoff rule.,Same lifecycle ledgers plus agreed formula,registration-to-deleted interval,high
+vehicle insurance cost/premium,unavailable,"ERP insurance tables describe customer coverage/fees, not fleet insurance premium cost.",Jejuro insurance policy/payment ledger keyed by vehicle and coverage period,reservation_insurance.fee (customer charge),high
+historical daily fleet count by model,unavailable,"Vehicle table exposes current record state and soft deletion, but no verified acquisition/sale effective dates; history starts 2024-10 and does not prove full lifecycle.",Daily inventory snapshots or effective-dated fleet lifecycle ledger,created_at/deleted_at reconstruction,high
+true vehicle/model utilization rate,unavailable,"Reservation numerator exists, but historical available fleet-hours denominator is absent.",Effective-dated available/unavailable fleet intervals and agreed state exclusions,booked hours divided by record age,high
+recognized revenue / cash receipts,unavailable in this package,"reservation.final_price is a booked price field, not verified accounting revenue.",Settlement/payment/accounting ledger with recognition/refund rules,booked_final_price_krw_sum_proxy,medium

@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>제주로 렌터카 품절/가동률/증차 기회 분석</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 32px; color: #1f2933; }
+    h1 { font-size: 26px; margin-bottom: 6px; }
+    h2 { font-size: 18px; margin-top: 28px; border-bottom: 1px solid #d9e2ec; padding-bottom: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(160px, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric { border: 1px solid #d9e2ec; border-radius: 6px; padding: 12px; background: #f8fafc; }
+    .label { color: #52606d; font-size: 12px; }
+    .value { font-size: 20px; font-weight: 650; margin-top: 4px; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 10px; }
+    th, td { border: 1px solid #d9e2ec; padding: 6px 8px; text-align: right; }
+    th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+    th { background: #edf2f7; }
+    .note { color: #52606d; font-size: 13px; line-height: 1.5; }
+    .insights { margin: 10px 0 0 18px; color: #334e68; font-size: 13px; line-height: 1.6; }
+    .dash { display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 16px; margin-top: 12px; }
+    .panel { border: 1px solid #d9e2ec; border-radius: 6px; padding: 14px; background: #ffffff; }
+    .panel-title { font-size: 13px; font-weight: 650; margin-bottom: 10px; color: #243b53; }
+    .bar-row { display: grid; grid-template-columns: minmax(120px, 1.25fr) minmax(140px, 2fr) 100px; gap: 10px; align-items: center; margin: 8px 0; }
+    .bar-label { font-size: 12px; color: #334e68; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 10px; background: #edf2f7; border-radius: 5px; overflow: hidden; }
+    .bar-fill { height: 100%; background: #2f80ed; border-radius: 5px; }
+    .bar-value { font-size: 12px; color: #243b53; text-align: right; }
+    @media (max-width: 900px) {
+      .grid, .dash { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; gap: 4px; }
+      .bar-value { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <h1>제주로 렌터카 품절/가동률/증차 기회 분석</h1>
+  <div class="note">분석 기간: 2025-01-01 ~ 2026-08-11.
+  차량 보유기간은 데이터상 실제 매입/매각일이 없어 차량 등록일~ERP soft-delete일을 사용한 프록시입니다.</div>
+  <div class="grid">
+    <div class="metric"><div class="label">유효 예약</div><div class="value">35,972건</div></div>
+    <div class="metric"><div class="label">평균 가동률</div><div class="value">16.5%</div></div>
+    <div class="metric"><div class="label">품절 모델-일자</div><div class="value">1,545일</div></div>
+    <div class="metric"><div class="label">매출 프록시</div><div class="value">5,206,073,050원</div></div>
+  </div>
+  <h2>결과 해석</h2>
+  <ul class="insights">
+    <li>전체 평균 가동률은 16.5%로 높지 않지만, 품절은 특정 모델과 차급에 집중되어 있습니다. 전체 보유 재고를 늘리기보다 품절 빈도가 높은 모델을 선별하는 방식이 더 적합합니다.</li>
+    <li>품절 모델-일자는 1,545일로 전체 모델-일자의 1.9%입니다. 가장 품절일이 많은 모델은 22년 포르쉐 718박스터 컨버터블(휘)입니다.</li>
+    <li>추가 1대 기준 이익 프록시는 146,439,955원, 추가 2대 기준은 221,475,534원입니다. 증차 후보는 21년 벤츠G63 AMG 지바겐(휘)처럼 품절일과 미전환 수요가 동시에 높은 모델부터 검토하는 것이 좋습니다.</li>
+    <li>모델별 운영이익 프록시는 25년 더뉴스포티지 하이브리드 4륜(휘)이 가장 높습니다. 이 값은 요금 매출에서 과도 수리비를 보정한 수리비만 차감한 값이며, 감가상각은 데이터 부재로 아직 빠져 있습니다.</li>
+    <li>다만 매입가/매각가가 없어 감가상각을 반영하지 못했으므로, 최종 구매 의사결정 전에는 차량별 실제 취득가와 예상 매각가를 넣어 재계산해야 합니다.</li>
+  </ul>
+  <h2>대시보드</h2>
+  <div class="dash">
+    <div class="panel"><div class="panel-title">품절일 상위 모델</div><div class="bar-row"><div class="bar-label">22년 포르쉐 718박스터 컨버터블(휘)</div><div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div><div class="bar-value">128일</div></div>
+<div class="bar-row"><div class="bar-label">26년  스포티지(휘)</div><div class="bar-track"><div class="bar-fill" style="width:96.1%"></div></div><div class="bar-value">123일</div></div>
+<div class="bar-row"><div class="bar-label">21년 벤츠G63 AMG 지바겐(휘)</div><div class="bar-track"><div class="bar-fill" style="width:95.3%"></div></div><div class="bar-value">122일</div></div>
+<div class="bar-row"><div class="bar-label">21년 아우디A5 카브리올레(휘)</div><div class="bar-track"><div class="bar-fill" style="width:68.8%"></div></div><div class="bar-value">88일</div></div>
+<div class="bar-row"><div class="bar-label">23년 4세대 쏘렌토(7인/휘)</div><div class="bar-track"><div class="bar-fill" style="width:67.2%"></div></div><div class="bar-value">86일</div></div>
+<div class="bar-row"><div class="bar-label">25년 GV80 쿠페 4륜(5인/휘)</div><div class="bar-track"><div class="bar-fill" style="width:64.8%"></div></div><div class="bar-value">83일</div></div>
+<div class="bar-row"><div class="bar-label">25년 포르쉐 카이엔 하이브리드 쿠페 4륜</div><div class="bar-track"><div class="bar-fill" style="width:64.1%"></div></div><div class="bar-value">82일</div></div>
+<div class="bar-row"><div class="bar-label">24년 쏠라티(15인/경유)</div><div class="bar-track"><div class="bar-fill" style="width:60.9%"></div></div><div class="bar-value">78일</div></div></div>
+    <div class="panel"><div class="panel-title">기간 내 품절율 상위 모델</div><div class="bar-row"><div class="bar-label">26년  스포티지(휘)</div><div class="bar-track"><div class="bar-fill" style="width:53.0%"></div></div><div class="bar-value">53.0%</div></div>
+<div class="bar-row"><div class="bar-label">26년 쏠라티(15인/경유)</div><div class="bar-track"><div class="bar-fill" style="width:22.2%"></div></div><div class="bar-value">22.2%</div></div>
+<div class="bar-row"><div class="bar-label">22년 포르쉐 718박스터 컨버터블(휘)</div><div class="bar-track"><div class="bar-fill" style="width:21.8%"></div></div><div class="bar-value">21.8%</div></div>
+<div class="bar-row"><div class="bar-label">21년 벤츠G63 AMG 지바겐(휘)</div><div class="bar-track"><div class="bar-fill" style="width:20.7%"></div></div><div class="bar-value">20.7%</div></div>
+<div class="bar-row"><div class="bar-label">25년 포르쉐 카이엔 하이브리드 쿠페 4륜</div><div class="bar-track"><div class="bar-fill" style="width:17.9%"></div></div><div class="bar-value">17.9%</div></div>
+<div class="bar-row"><div class="bar-label">21년 아우디A5 카브리올레(휘)</div><div class="bar-track"><div class="bar-fill" style="width:15.0%"></div></div><div class="bar-value">15.0%</div></div>
+<div class="bar-row"><div class="bar-label">23년 4세대 쏘렌토(7인/휘)</div><div class="bar-track"><div class="bar-fill" style="width:14.6%"></div></div><div class="bar-value">14.6%</div></div>
+<div class="bar-row"><div class="bar-label">25년 GV80 쿠페 4륜(5인/휘)</div><div class="bar-track"><div class="bar-fill" style="width:14.1%"></div></div><div class="bar-value">14.1%</div></div></div>
+    <div class="panel"><div class="panel-title">평균 가동률 상위 모델</div><div class="bar-row"><div class="bar-label">26년 투싼(휘)</div><div class="bar-track"><div class="bar-fill" style="width:40.3%"></div></div><div class="bar-value">40.3%</div></div>
+<div class="bar-row"><div class="bar-label">25년 투싼 4륜(휘)</div><div class="bar-track"><div class="bar-fill" style="width:39.2%"></div></div><div class="bar-value">39.2%</div></div>
+<div class="bar-row"><div class="bar-label">26년  스포티지(휘)</div><div class="bar-track"><div class="bar-fill" style="width:38.4%"></div></div><div class="bar-value">38.4%</div></div>
+<div class="bar-row"><div class="bar-label">25년 아반떼 하이브리드(휘)</div><div class="bar-track"><div class="bar-fill" style="width:36.7%"></div></div><div class="bar-value">36.7%</div></div>
+<div class="bar-row"><div class="bar-label">26년 레이(휘)</div><div class="bar-track"><div class="bar-fill" style="width:36.6%"></div></div><div class="bar-value">36.6%</div></div>
+<div class="bar-row"><div class="bar-label">25년 투싼 하이브리드 4륜(휘)</div><div class="bar-track"><div class="bar-fill" style="width:35.9%"></div></div><div class="bar-value">35.9%</div></div>
+<div class="bar-row"><div class="bar-label">25년 레이(휘)</div><div class="bar-track"><div class="bar-fill" style="width:35.6%"></div></div><div class="bar-value">35.6%</div></div>
+<div class="bar-row"><div class="bar-label">25년 G80 4륜(휘)</div><div class="bar-track"><div class="bar-fill" style="width:35.4%"></div></div><div class="bar-value">35.4%</div></div></div>
+    <div class="panel"><div class="panel-title">1대 증차 이익 프록시 상위 모델</div><div class="bar-row"><div class="bar-label">21년 벤츠G63 AMG 지바겐(휘)</div><div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div><div class="bar-value">31,373,168원</div></div>
+<div class="bar-row"><div class="bar-label">22년 포르쉐 718박스터 컨버터블(휘)</div><div class="bar-track"><div class="bar-fill" style="width:86.2%"></div></div><div class="bar-value">27,042,328원</div></div>
+<div class="bar-row"><div class="bar-label">25년 포르쉐 카이엔 하이브리드 쿠페 4륜</div><div class="bar-track"><div class="bar-fill" style="width:60.5%"></div></div><div class="bar-value">18,982,575원</div></div>
+<div class="bar-row"><div class="bar-label">26년 쏠라티(15인/경유)</div><div class="bar-track"><div class="bar-fill" style="width:29.5%"></div></div><div class="bar-value">9,254,211원</div></div>
+<div class="bar-row"><div class="bar-label">25년 GV80 쿠페 4륜(5인/휘)</div><div class="bar-track"><div class="bar-fill" style="width:17.3%"></div></div><div class="bar-value">5,422,117원</div></div>
+<div class="bar-row"><div class="bar-label">24년 쏠라티(15인/경유)</div><div class="bar-track"><div class="bar-fill" style="width:15.7%"></div></div><div class="bar-value">4,914,949원</div></div>
+<div class="bar-row"><div class="bar-label">26년  스포티지(휘)</div><div class="bar-track"><div class="bar-fill" style="width:14.1%"></div></div><div class="bar-value">4,433,049원</div></div>
+<div class="bar-row"><div class="bar-label">21년 벤츠 C클래스 카브리올레(휘)</div><div class="bar-track"><div class="bar-fill" style="width:13.1%"></div></div><div class="bar-value">4,122,184원</div></div></div>
+    <div class="panel"><div class="panel-title">모델별 운영이익 프록시</div><div class="bar-row"><div class="bar-label">25년 더뉴스포티지 하이브리드 4륜(휘)</div><div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div><div class="bar-value">143,742,299원</div></div>
+<div class="bar-row"><div class="bar-label">24년 더 올뉴머스탱컨버터블2.3 (휘)</div><div class="bar-track"><div class="bar-fill" style="width:99.0%"></div></div><div class="bar-value">142,237,605원</div></div>
+<div class="bar-row"><div class="bar-label">25년 레이(휘)</div><div class="bar-track"><div class="bar-fill" style="width:87.5%"></div></div><div class="bar-value">125,833,919원</div></div>
+<div class="bar-row"><div class="bar-label">24년 쏘나타 디엣지(휘)</div><div class="bar-track"><div class="bar-fill" style="width:84.9%"></div></div><div class="bar-value">122,016,502원</div></div>
+<div class="bar-row"><div class="bar-label">25년 아반떼 하이브리드(휘)</div><div class="bar-track"><div class="bar-fill" style="width:84.8%"></div></div><div class="bar-value">121,899,173원</div></div>
+<div class="bar-row"><div class="bar-label">22년 EV6(전기)</div><div class="bar-track"><div class="bar-fill" style="width:79.3%"></div></div><div class="bar-value">113,948,298원</div></div>
+<div class="bar-row"><div class="bar-label">24년 더 뉴 아반떼(휘)</div><div class="bar-track"><div class="bar-fill" style="width:78.5%"></div></div><div class="bar-value">112,782,195원</div></div>
+<div class="bar-row"><div class="bar-label">25년 카니발 하이브리드 9인승(휘)</div><div class="bar-track"><div class="bar-fill" style="width:78.4%"></div></div><div class="bar-value">112,757,210원</div></div></div>
+    <div class="panel"><div class="panel-title">차급별 가동률</div><div class="bar-row"><div class="bar-label">URBAN</div><div class="bar-track"><div class="bar-fill" style="width:54.1%"></div></div><div class="bar-value">21.6%</div></div>
+<div class="bar-row"><div class="bar-label">SUV</div><div class="bar-track"><div class="bar-fill" style="width:47.8%"></div></div><div class="bar-value">19.1%</div></div>
+<div class="bar-row"><div class="bar-label">LUXURY</div><div class="bar-track"><div class="bar-fill" style="width:44.7%"></div></div><div class="bar-value">17.9%</div></div>
+<div class="bar-row"><div class="bar-label">COMPACT</div><div class="bar-track"><div class="bar-fill" style="width:43.4%"></div></div><div class="bar-value">17.4%</div></div>
+<div class="bar-row"><div class="bar-label">IMPORTED</div><div class="bar-track"><div class="bar-fill" style="width:42.2%"></div></div><div class="bar-value">16.9%</div></div>
+<div class="bar-row"><div class="bar-label">MIDSIZE</div><div class="bar-track"><div class="bar-fill" style="width:41.0%"></div></div><div class="bar-value">16.4%</div></div>
+<div class="bar-row"><div class="bar-label">EV</div><div class="bar-track"><div class="bar-fill" style="width:37.3%"></div></div><div class="bar-value">14.9%</div></div>
+<div class="bar-row"><div class="bar-label">RV</div><div class="bar-track"><div class="bar-fill" style="width:30.5%"></div></div><div class="bar-value">12.2%</div></div></div>
+    <div class="panel"><div class="panel-title">차급별 품절 모델-일자</div><div class="bar-row"><div class="bar-label">SUV</div><div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div><div class="bar-value">492일</div></div>
+<div class="bar-row"><div class="bar-label">SUPERCAR</div><div class="bar-track"><div class="bar-fill" style="width:74.0%"></div></div><div class="bar-value">364일</div></div>
+<div class="bar-row"><div class="bar-label">RV</div><div class="bar-track"><div class="bar-fill" style="width:65.9%"></div></div><div class="bar-value">324일</div></div>
+<div class="bar-row"><div class="bar-label">IMPORTED</div><div class="bar-track"><div class="bar-fill" style="width:54.9%"></div></div><div class="bar-value">270일</div></div>
+<div class="bar-row"><div class="bar-label">LUXURY</div><div class="bar-track"><div class="bar-fill" style="width:13.0%"></div></div><div class="bar-value">64일</div></div>
+<div class="bar-row"><div class="bar-label">MIDSIZE</div><div class="bar-track"><div class="bar-fill" style="width:3.7%"></div></div><div class="bar-value">18일</div></div>
+<div class="bar-row"><div class="bar-label">URBAN</div><div class="bar-track"><div class="bar-fill" style="width:2.4%"></div></div><div class="bar-value">12일</div></div>
+<div class="bar-row"><div class="bar-label">COMPACT</div><div class="bar-track"><div class="bar-fill" style="width:1.0%"></div></div><div class="bar-value">1일</div></div></div>
+  </div>
+  <h2>계산 정의</h2>
+  <p class="note">유효 예약은 취소를 제외한 RETURNED, CONFIRMED, PENDING, IN_USE, IN_PROGRESS입니다.
+  품절일은 모델-일자별 최대 동시 예약 수가 해당 일자의 보유 차량 수 이상인 날입니다.
+  가동률은 예약 시간 합계 / 보유 차량 시간입니다. 증차 이익은 미전환 사전예약이 품절일에 존재한다는 전제의 프록시이며,
+  감가상각은 매입/매각 데이터 부재로 제외했고 수리비는 차량별 수리비 합계의 상위 1%를 winsorize해 시간당 비용으로 반영했습니다.</p>
+  <h2>분석 과정</h2>
+  <p class="note">1) 예약 데이터에서 취소/삭제 건을 제외하고 예약 시작~반납 시간을 모델별로 정리했습니다.
+  2) 차량 등록 데이터에서 모델별 보유 차량 수를 일자 단위로 펼쳤습니다.
+  3) 모델-일자별 예약 시간과 최대 동시 예약 대수를 계산해 보유대수와 비교했습니다.
+  4) 최대 동시 예약 대수가 보유대수 이상인 날을 품절일로 보고, 연속된 품절일을 품절 기간으로 묶었습니다.
+  5) 미전환 사전예약 중 품절일과 겹치는 수요를 추가 차량 1대/2대가 흡수할 수 있는 시간으로 제한해 증차 매출과 비용 프록시를 계산했습니다.</p>
+  <h2>1대 증차 이익 프록시 로직</h2>
+  <p class="note">품절일에 발생한 미전환 사전예약을 잠재 수요로 보고, 차량 1대가 하루에 추가로 흡수할 수 있는 시간은 최대 24시간으로 제한했습니다.
+  모델별 기존 예약의 시간당 매출을 계산한 뒤, 흡수 가능 시간에 곱해 추가 매출을 추정했습니다.
+  비용은 차량별 수리비 합계에서 상위 1% 과도값을 winsorize한 뒤 모델별 시간당 수리비로 환산해 차감했습니다.
+  실제 매입가와 매각가가 없어 감가상각 비용은 이 프록시에는 포함하지 않았습니다.</p>
+  <h2>품절 상위 모델</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model_name</th>
+      <th>vehicle_class</th>
+      <th>observed_days</th>
+      <th>stockout_days</th>
+      <th>stockout_day_rate</th>
+      <th>stockout_period_count</th>
+      <th>avg_stockout_period_days</th>
+      <th>max_stockout_period_days</th>
+      <th>utilization_rate</th>
+      <th>revenue_krw</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>22년 포르쉐 718박스터 컨버터블(휘)</td>
+      <td>SUPERCAR</td>
+      <td>588</td>
+      <td>128</td>
+      <td>21.8%</td>
+      <td>39.0</td>
+      <td>3.282051</td>
+      <td>14.0</td>
+      <td>13.2%</td>
+      <td>35,433,936원</td>
+    </tr>
+    <tr>
+      <td>26년&nbsp;&nbsp;스포티지(휘)</td>
+      <td>SUV</td>
+      <td>232</td>
+      <td>123</td>
+      <td>53.0%</td>
+      <td>22.0</td>
+      <td>5.590909</td>
+      <td>22.0</td>
+      <td>38.4%</td>
+      <td>6,628,735원</td>
+    </tr>
+    <tr>
+      <td>21년 벤츠G63 AMG 지바겐(휘)</td>
+      <td>SUPERCAR</td>
+      <td>588</td>
+      <td>122</td>
+      <td>20.7%</td>
+      <td>41.0</td>
+      <td>2.975610</td>
+      <td>7.0</td>
+      <td>13.9%</td>
+      <td>41,158,890원</td>
+    </tr>
+    <tr>
+      <td>21년 아우디A5 카브리올레(휘)</td>
+      <td>IMPORTED</td>
+      <td>588</td>
+      <td>88</td>
+      <td>15.0%</td>
+      <td>23.0</td>
+      <td>3.826087</td>
+      <td>12.0</td>
+      <td>10.7%</td>
+      <td>6,139,865원</td>
+    </tr>
+    <tr>
+      <td>23년 4세대 쏘렌토(7인/휘)</td>
+      <td>SUV</td>
+      <td>588</td>
+      <td>86</td>
+      <td>14.6%</td>
+      <td>21.0</td>
+      <td>4.095238</td>
+      <td>9.0</td>
+      <td>10.9%</td>
+      <td>3,601,005원</td>
+    </tr>
+    <tr>
+      <td>25년 GV80 쿠페 4륜(5인/휘)</td>
+      <td>SUV</td>
+      <td>588</td>
+      <td>83</td>
+      <td>14.1%</td>
+      <td>34.0</td>
+      <td>2.441176</td>
+      <td>6.0</td>
+      <td>28.3%</td>
+      <td>37,207,358원</td>
+    </tr>
+    <tr>
+      <td>25년 포르쉐 카이엔 하이브리드 쿠페 4륜</td>
+      <td>SUPERCAR</td>
+      <td>457</td>
+      <td>82</td>
+      <td>17.9%</td>
+      <td>22.0</td>
+      <td>3.727273</td>
+      <td>11.0</td>
+      <td>12.4%</td>
+      <td>22,495,395원</td>
+    </tr>
+    <tr>
+      <td>24년 쏠라티(15인/경유)</td>
+      <td>RV</td>
+      <td>588</td>
+      <td>78</td>
+      <td>13.3%</td>
+      <td>26.0</td>
+      <td>3.000000</td>
+      <td>4.0</td>
+      <td>8.7%</td>
+      <td>11,393,735원</td>
+    </tr>
+    <tr>
+      <td>21년 벤츠 C클래스 카브리올레(휘)</td>
+      <td>IMPORTED</td>
+      <td>588</td>
+      <td>66</td>
+      <td>11.2%</td>
+      <td>28.0</td>
+      <td>2.357143</td>
+      <td>7.0</td>
+      <td>22.1%</td>
+      <td>24,722,390원</td>
+    </tr>
+    <tr>
+      <td>26년 쏠라티(15인/경유)</td>
+      <td>RV</td>
+      <td>239</td>
+      <td>53</td>
+      <td>22.2%</td>
+      <td>16.0</td>
+      <td>3.312500</td>
+      <td>7.0</td>
+      <td>15.3%</td>
+      <td>10,718,395원</td>
+    </tr>
+    <tr>
+      <td>20/21년 BMW Z4 로드스터(휘)</td>
+      <td>IMPORTED</td>
+      <td>588</td>
+      <td>42</td>
+      <td>7.1%</td>
+      <td>20.0</td>
+      <td>2.100000</td>
+      <td>4.0</td>
+      <td>17.5%</td>
+      <td>20,578,019원</td>
+    </tr>
+    <tr>
+      <td>24년 더 뉴 카니발 하이브리드 9인승(휘)</td>
+      <td>RV</td>
+      <td>588</td>
+      <td>42</td>
+      <td>7.1%</td>
+      <td>10.0</td>
+      <td>4.200000</td>
+      <td>8.0</td>
+      <td>15.9%</td>
+      <td>14,929,955원</td>
+    </tr>
+    <tr>
+      <td>16/18년 올뉴카니발9인(경유)</td>
+      <td>RV</td>
+      <td>588</td>
+      <td>42</td>
+      <td>7.1%</td>
+      <td>10.0</td>
+      <td>4.200000</td>
+      <td>7.0</td>
+      <td>3.4%</td>
+      <td>1,855,555원</td>
+    </tr>
+    <tr>
+      <td>24년 스타리아 11인승 4륜(경유)</td>
+      <td>RV</td>
+      <td>588</td>
+      <td>40</td>
+      <td>6.8%</td>
+      <td>17.0</td>
+      <td>2.352941</td>
+      <td>4.0</td>
+      <td>15.8%</td>
+      <td>15,815,755원</td>
+    </tr>
+    <tr>
+      <td>25년 BMW X7 xdrive40i 하이브리드(휘)</td>
+      <td>SUPERCAR</td>
+      <td>419</td>
+      <td>32</td>
+      <td>7.6%</td>
+      <td>10.0</td>
+      <td>3.200000</td>
+      <td>5.0</td>
+      <td>5.2%</td>
+      <td>9,355,460원</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>증차 이익 프록시 상위 모델</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model_name</th>
+      <th>vehicle_class</th>
+      <th>latent_hours</th>
+      <th>extra_1_cars_profit_proxy_krw</th>
+      <th>extra_2_cars_profit_proxy_krw</th>
+      <th>extra_1_cars_revenue_proxy_krw</th>
+      <th>extra_2_cars_revenue_proxy_krw</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>21년 벤츠G63 AMG 지바겐(휘)</td>
+      <td>SUPERCAR</td>
+      <td>3928.0</td>
+      <td>31,373,168원</td>
+      <td>45,675,641원</td>
+      <td>31,469,475원</td>
+      <td>45,815,853원</td>
+    </tr>
+    <tr>
+      <td>22년 포르쉐 718박스터 컨버터블(휘)</td>
+      <td>SUPERCAR</td>
+      <td>8592.0</td>
+      <td>27,042,328원</td>
+      <td>42,888,840원</td>
+      <td>27,215,750원</td>
+      <td>43,163,886원</td>
+    </tr>
+    <tr>
+      <td>25년 포르쉐 카이엔 하이브리드 쿠페 4륜</td>
+      <td>SUPERCAR</td>
+      <td>1683.0</td>
+      <td>18,982,575원</td>
+      <td>25,033,322원</td>
+      <td>19,056,573원</td>
+      <td>25,130,908원</td>
+    </tr>
+    <tr>
+      <td>26년 쏠라티(15인/경유)</td>
+      <td>RV</td>
+      <td>1839.5</td>
+      <td>9,254,211원</td>
+      <td>12,714,640원</td>
+      <td>9,254,211원</td>
+      <td>12,714,640원</td>
+    </tr>
+    <tr>
+      <td>25년 GV80 쿠페 4륜(5인/휘)</td>
+      <td>SUV</td>
+      <td>2408.0</td>
+      <td>5,422,117원</td>
+      <td>8,680,041원</td>
+      <td>5,422,117원</td>
+      <td>8,680,041원</td>
+    </tr>
+    <tr>
+      <td>24년 쏠라티(15인/경유)</td>
+      <td>RV</td>
+      <td>1189.5</td>
+      <td>4,914,949원</td>
+      <td>7,231,930원</td>
+      <td>4,949,294원</td>
+      <td>7,282,466원</td>
+    </tr>
+    <tr>
+      <td>26년&nbsp;&nbsp;스포티지(휘)</td>
+      <td>SUV</td>
+      <td>2759.0</td>
+      <td>4,433,049원</td>
+      <td>6,140,204원</td>
+      <td>4,433,049원</td>
+      <td>6,140,204원</td>
+    </tr>
+    <tr>
+      <td>21년 벤츠 C클래스 카브리올레(휘)</td>
+      <td>IMPORTED</td>
+      <td>1532.0</td>
+      <td>4,122,184원</td>
+      <td>5,407,638원</td>
+      <td>4,122,184원</td>
+      <td>5,407,638원</td>
+    </tr>
+    <tr>
+      <td>25년 BMW X7 xdrive40i 하이브리드(휘)</td>
+      <td>SUPERCAR</td>
+      <td>671.5</td>
+      <td>3,834,598원</td>
+      <td>5,841,912원</td>
+      <td>3,834,598원</td>
+      <td>5,841,912원</td>
+    </tr>
+    <tr>
+      <td>21년 아우디A5 카브리올레(휘)</td>
+      <td>IMPORTED</td>
+      <td>2364.0</td>
+      <td>2,915,758원</td>
+      <td>4,423,349원</td>
+      <td>2,915,758원</td>
+      <td>4,423,349원</td>
+    </tr>
+    <tr>
+      <td>20/21년 BMW Z4 로드스터(휘)</td>
+      <td>IMPORTED</td>
+      <td>2008.5</td>
+      <td>2,807,575원</td>
+      <td>4,480,217원</td>
+      <td>2,843,068원</td>
+      <td>4,536,854원</td>
+    </tr>
+    <tr>
+      <td>24년 더 뉴 카니발 하이브리드 9인승(휘)</td>
+      <td>RV</td>
+      <td>1260.5</td>
+      <td>2,141,143원</td>
+      <td>3,476,248원</td>
+      <td>2,141,143원</td>
+      <td>3,476,248원</td>
+    </tr>
+    <tr>
+      <td>25년 G80 4륜(휘)</td>
+      <td>LUXURY</td>
+      <td>1568.5</td>
+      <td>1,792,229원</td>
+      <td>3,425,771원</td>
+      <td>1,795,062원</td>
+      <td>3,431,186원</td>
+    </tr>
+    <tr>
+      <td>23년 4세대 쏘렌토(7인/휘)</td>
+      <td>SUV</td>
+      <td>1120.0</td>
+      <td>1,773,890원</td>
+      <td>2,317,013원</td>
+      <td>1,773,890원</td>
+      <td>2,317,013원</td>
+    </tr>
+    <tr>
+      <td>25년 투싼 4륜(휘)</td>
+      <td>SUV</td>
+      <td>3779.0</td>
+      <td>1,716,862원</td>
+      <td>3,238,298원</td>
+      <td>1,717,467원</td>
+      <td>3,239,440원</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>모델별 운영이익 프록시</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model_name</th>
+      <th>vehicle_class</th>
+      <th>fleet_vehicle_days</th>
+      <th>booked_vehicle_days</th>
+      <th>utilization_rate</th>
+      <th>booked_revenue_krw</th>
+      <th>repair_cost_winsorized_krw</th>
+      <th>repair_cost_removed_as_excess_krw</th>
+      <th>profit_proxy_before_depreciation_krw</th>
+      <th>profit_margin_proxy_before_depreciation</th>
+      <th>depreciation_status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>25년 더뉴스포티지 하이브리드 4륜(휘)</td>
+      <td>SUV</td>
+      <td>7304</td>
+      <td>2404.856250</td>
+      <td>32.9%</td>
+      <td>143,742,299원</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>143,742,299원</td>
+      <td>100.0%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>24년 더 올뉴머스탱컨버터블2.3 (휘)</td>
+      <td>IMPORTED</td>
+      <td>4704</td>
+      <td>1298.306250</td>
+      <td>27.6%</td>
+      <td>143,224,105원</td>
+      <td>986,500원</td>
+      <td>0원</td>
+      <td>142,237,605원</td>
+      <td>99.3%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>25년 레이(휘)</td>
+      <td>URBAN</td>
+      <td>11110</td>
+      <td>3954.206250</td>
+      <td>35.6%</td>
+      <td>125,948,919원</td>
+      <td>115,000원</td>
+      <td>0원</td>
+      <td>125,833,919원</td>
+      <td>99.9%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>24년 쏘나타 디엣지(휘)</td>
+      <td>MIDSIZE</td>
+      <td>8820</td>
+      <td>2961.806250</td>
+      <td>33.6%</td>
+      <td>122,016,502원</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>122,016,502원</td>
+      <td>100.0%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>25년 아반떼 하이브리드(휘)</td>
+      <td>COMPACT</td>
+      <td>7012</td>
+      <td>2574.081944</td>
+      <td>36.7%</td>
+      <td>121,899,173원</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>121,899,173원</td>
+      <td>100.0%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>22년 EV6(전기)</td>
+      <td>EV</td>
+      <td>12348</td>
+      <td>2469.815278</td>
+      <td>20.0%</td>
+      <td>118,758,604원</td>
+      <td>4,810,306원</td>
+      <td>2,102,694원</td>
+      <td>113,948,298원</td>
+      <td>95.9%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>24년 더 뉴 아반떼(휘)</td>
+      <td>COMPACT</td>
+      <td>9408</td>
+      <td>2953.704861</td>
+      <td>31.4%</td>
+      <td>112,912,795원</td>
+      <td>130,600원</td>
+      <td>0원</td>
+      <td>112,782,195원</td>
+      <td>99.9%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>25년 카니발 하이브리드 9인승(휘)</td>
+      <td>RV</td>
+      <td>4578</td>
+      <td>1264.371528</td>
+      <td>27.6%</td>
+      <td>112,757,210원</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>112,757,210원</td>
+      <td>100.0%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>25년 투싼 하이브리드 4륜(휘)</td>
+      <td>SUV</td>
+      <td>5225</td>
+      <td>1873.309028</td>
+      <td>35.9%</td>
+      <td>111,276,734원</td>
+      <td>99,000원</td>
+      <td>0원</td>
+      <td>111,177,734원</td>
+      <td>99.9%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>24년 디올뉴 싼타페 4륜(7인/휘)</td>
+      <td>SUV</td>
+      <td>6468</td>
+      <td>1551.648611</td>
+      <td>24.0%</td>
+      <td>92,511,562원</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>92,511,562원</td>
+      <td>100.0%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>25년 G80 4륜(휘)</td>
+      <td>LUXURY</td>
+      <td>2885</td>
+      <td>1022.463889</td>
+      <td>35.4%</td>
+      <td>91,769,310원</td>
+      <td>408,650원</td>
+      <td>0원</td>
+      <td>91,360,660원</td>
+      <td>99.6%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>24년 더 뉴 쏘렌토 4륜(7인/휘)</td>
+      <td>SUV</td>
+      <td>7644</td>
+      <td>1525.737500</td>
+      <td>20.0%</td>
+      <td>85,493,112원</td>
+      <td>48,200원</td>
+      <td>0원</td>
+      <td>85,444,912원</td>
+      <td>99.9%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>25년 GV80 4륜(7인/휘)</td>
+      <td>SUV</td>
+      <td>2749</td>
+      <td>788.769444</td>
+      <td>28.7%</td>
+      <td>84,879,401원</td>
+      <td>0원</td>
+      <td>0원</td>
+      <td>84,879,401원</td>
+      <td>100.0%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>24년 싼타페 하이브리드 4륜 (7인/휘)</td>
+      <td>SUV</td>
+      <td>5292</td>
+      <td>1252.397917</td>
+      <td>23.7%</td>
+      <td>81,613,515원</td>
+      <td>170,000원</td>
+      <td>0원</td>
+      <td>81,443,515원</td>
+      <td>99.8%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+    <tr>
+      <td>25년 투싼 4륜(휘)</td>
+      <td>SUV</td>
+      <td>3528</td>
+      <td>1382.710417</td>
+      <td>39.2%</td>
+      <td>79,600,880원</td>
+      <td>71,610원</td>
+      <td>0원</td>
+      <td>79,529,270원</td>
+      <td>99.9%</td>
+      <td>unavailable_purchase_sale_fields</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>차급 요약</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>vehicle_class</th>
+      <th>model_count</th>
+      <th>fleet_vehicle_days</th>
+      <th>booked_hours</th>
+      <th>revenue_krw</th>
+      <th>stockout_days</th>
+      <th>stockout_period_count</th>
+      <th>fleet_hours</th>
+      <th>utilization_rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SUV</td>
+      <td>47</td>
+      <td>130643</td>
+      <td>599307.733333</td>
+      <td>1,544,629,287원</td>
+      <td>492</td>
+      <td>190.0</td>
+      <td>3135432</td>
+      <td>19.1%</td>
+    </tr>
+    <tr>
+      <td>RV</td>
+      <td>34</td>
+      <td>96518</td>
+      <td>282346.750000</td>
+      <td>1,052,110,242원</td>
+      <td>324</td>
+      <td>114.0</td>
+      <td>2316432</td>
+      <td>12.2%</td>
+    </tr>
+    <tr>
+      <td>IMPORTED</td>
+      <td>26</td>
+      <td>43588</td>
+      <td>176490.800000</td>
+      <td>732,020,986원</td>
+      <td>270</td>
+      <td>108.0</td>
+      <td>1046112</td>
+      <td>16.9%</td>
+    </tr>
+    <tr>
+      <td>MIDSIZE</td>
+      <td>17</td>
+      <td>75025</td>
+      <td>294990.100000</td>
+      <td>498,838,450원</td>
+      <td>18</td>
+      <td>11.0</td>
+      <td>1800600</td>
+      <td>16.4%</td>
+    </tr>
+    <tr>
+      <td>COMPACT</td>
+      <td>14</td>
+      <td>68498</td>
+      <td>285427.200000</td>
+      <td>449,667,842원</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>1643952</td>
+      <td>17.4%</td>
+    </tr>
+    <tr>
+      <td>EV</td>
+      <td>5</td>
+      <td>44982</td>
+      <td>161280.450000</td>
+      <td>316,584,979원</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1079568</td>
+      <td>14.9%</td>
+    </tr>
+    <tr>
+      <td>LUXURY</td>
+      <td>15</td>
+      <td>21554</td>
+      <td>92492.150000</td>
+      <td>281,573,246원</td>
+      <td>64</td>
+      <td>34.0</td>
+      <td>517296</td>
+      <td>17.9%</td>
+    </tr>
+    <tr>
+      <td>URBAN</td>
+      <td>8</td>
+      <td>33247</td>
+      <td>172719.266667</td>
+      <td>222,204,337원</td>
+      <td>12</td>
+      <td>10.0</td>
+      <td>797928</td>
+      <td>21.6%</td>
+    </tr>
+    <tr>
+      <td>SUPERCAR</td>
+      <td>5</td>
+      <td>2407</td>
+      <td>6004.283333</td>
+      <td>108,443,681원</td>
+      <td>364</td>
+      <td>112.0</td>
+      <td>57768</td>
+      <td>10.4%</td>
+    </tr>
+    <tr>
+      <td>CITY</td>
+      <td>1</td>
+      <td>7577</td>
+      <td>0.000000</td>
+      <td>0원</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>181848</td>
+      <td>0.0%</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>데이터 한계</h2>
+  <p class="note">차량 데이터셋의 README와 missing_data_requests에 따르면 실제 취득일, 매입가, 매각일, 매각가는 제공되지 않았습니다.
+  따라서 “보유기간”, “감가상각 비용”, “순이익”은 회계 확정값이 아니라 운영 프록시입니다.
+  현재 차량 상태는 스냅샷 상태이므로 과거 일자별 사용 불가 차량을 정확히 제거하지 못합니다.</p>
+</body>
+</html>
